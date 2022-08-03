@@ -7,9 +7,9 @@ import telegram
 from telegram import Update
 from telegram import User as TelegramUser
 
-from lang_channel.src.comand_handlers import User
-from lang_channel.src.google_sheets import registry
-from lang_channel.src.telegram_bot.bot import bot
+from post_creator_bot.src.comand_handlers import User
+from post_creator_bot.src.google_sheets import registry
+from post_creator_bot.src.telegram_bot.bot import bot
 
 UPDATE_LIMIT = 5
 
@@ -47,7 +47,6 @@ def get_or_create_user(tg_user: TelegramUser, users: List[User]) -> User:
 
 async def main():
     print("start")
-    path = "11.png"
     users = []
     async for update in get_updates(bot):
         print(update)
@@ -59,14 +58,10 @@ async def main():
                     text=result.response_message,
                     reply_to_message_id=update.message.message_id,
                 )
-        except Exception as exp:
+        except Exception:
             traceback.print_exc()
             continue
 
-
-# post = create_post(update)
-#             post[1].save(path)
-#             await bot.send_photo(chat_id=update.message.chat_id, photo=open(path, 'rb'), caption=post[0])
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -7,7 +7,8 @@ import gspread
 from pydantic import BaseModel
 from telegram import PhotoSize, Voice
 
-from lang_channel.src.config import settings
+from post_creator_bot.src.config import settings
+from post_creator_bot.src.schemas import Post
 
 logger = logging.getLogger(__file__)
 
@@ -32,7 +33,8 @@ class SpreadSheet:
         self.metadata = self.spreadsheet.worksheet("metadata")
         logger.info("Setup worksheet successfully")
 
-    def save_post(self, text: str, photo: PhotoSize, voice: Voice) -> None:
+    def save_post(self, post: Post) -> None:
+        text, photo, voice = post.text, post.photo, post.voice
         logger.info(f"Saving {text=}")
         photo = json.dumps(
             {
@@ -61,19 +63,22 @@ class SpreadSheet:
             raise ValueError("The post is not saved")
         logger.info(f"{text=} saved")
 
-    def get_post(self):
-        values = self.worksheet.get_values("A1:C1")
-        post = values[0]
-        text = post[0]
-        photo_dict = json.loads(post[1])
-        photo = PhotoSize(**photo_dict)
-        voice_dict = json.loads(post[2])
-        voice = Voice(**voice_dict)
-        return text, photo, voice
+    def get_next_posts(self, amount) -> List[Post]:
+        values = self.worksheet.get_values(f"A1:C{amount}")
+        posts = []
+        for row in values:
+            text = row[0]
+            photo_dict = json.loads(row[1])
+            photo = PhotoSize(**photo_dict)
+            voice_dict = json.loads(row[2])
+            voice = Voice(**voice_dict)
+
+            posts.append(Post(text=text, photo=photo, voice=voice))
+        return posts
 
 
 registry = SpreadSheet()
-registry.get_post()
+# registry.get_next_posts()
 
 # photo = PhotoSize(width=90,
 #                   height=51,
