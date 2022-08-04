@@ -22,4 +22,4 @@ dmypy.json
 
 # PyCharm
 .idea/
-/post_creator_bot/service_account.json
+post_creator_bot/service_account.json

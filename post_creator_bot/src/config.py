@@ -8,6 +8,7 @@ dotenv_path = Path(__file__).parents[1] / ".env"
 
 class Settings(BaseSettings):
     token: str = Field(..., env="TG_BOT_TOKEN")
+    channel: str
     spreadsheet_name: str = "post_list"
     allowed_users: List[str] = [
         "240856036",

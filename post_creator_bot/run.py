@@ -1,68 +1,34 @@
 import asyncio
 import logging
-import traceback
-from typing import AsyncIterator, List
+from typing import Dict
 
 import telegram
-from telegram import Update
-from telegram import User as TelegramUser
+from fastapi import FastAPI
 
-from post_creator_bot.src.comand_handlers import User
+from post_creator_bot.src.config import settings
 from post_creator_bot.src.google_sheets import registry
-from post_creator_bot.src.telegram_bot.bot import bot
-
-UPDATE_LIMIT = 5
+from post_creator_bot.src.post_post import post_post
+from post_creator_bot.src.telegram_bot.bot import run_bot
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
 
-
-async def get_updates(bot_instance) -> AsyncIterator[Update]:
-    last_update_id = 0
-    while True:
-        try:
-            updates = await bot_instance.get_updates(
-                limit=UPDATE_LIMIT, offset=last_update_id if last_update_id else None
-            )
-        except telegram.error.TimedOut:
-            # TODO FIX ME
-            continue
-        if not updates:
-            await asyncio.sleep(0.1)
-            continue
-        for update in updates:
-            last_update_id = max(last_update_id, update.update_id + 1)
-            yield update
+app = FastAPI()
+bot = telegram.Bot(token=settings.token)
 
 
-def get_or_create_user(tg_user: TelegramUser, users: List[User]) -> User:
-    for user in users:
-        if user.id == tg_user.id:
-            return user
-    new_user = User(tg_user, registry)
-    users.append(new_user)
-    return new_user
+@app.on_event("startup")
+async def startup():
+    asyncio.create_task(run_bot(bot))
 
 
-async def main():
-    print("start")
-    users = []
-    async for update in get_updates(bot):
-        print(update)
-        user = get_or_create_user(update.message.from_user, users)
-        try:
-            result = await user.process_reply(update)
-            if result.response_message:
-                await user.tg_user.send_message(
-                    text=result.response_message,
-                    reply_to_message_id=update.message.message_id,
-                )
-        except Exception:
-            traceback.print_exc()
-            continue
+@app.get("/")
+async def get_status() -> Dict[str, str]:
+    return {"status": "ok"}
 
 
-if __name__ == "__main__":
-    asyncio.run(main())
-    ...
+@app.post("/publish_post", responses={200: {"description": "Post posted successfully"}})
+async def publish_post() -> Dict[str, str]:
+    await post_post(bot, registry)
+    return {"description": "Post posted successfully"}
