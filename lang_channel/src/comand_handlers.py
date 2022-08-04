@@ -8,9 +8,9 @@ from telegram import PhotoSize, Update
 from telegram import User as TelegramUser
 from telegram import Voice
 
-from post_creator_bot.src.google_sheets import registry
-from post_creator_bot.src.preview.get_preview import get_preview
-from post_creator_bot.src.schemas import Post
+from lang_channel.src.google_sheets import registry
+from lang_channel.src.preview.get_preview import get_preview
+from lang_channel.src.schemas import Post
 
 PREVIEW_PATH = Path("../previews")
 PREVIEW_PATH.mkdir(exist_ok=True)

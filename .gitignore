@@ -7,13 +7,9 @@ __pycache__/
 .ipynb_checkpoints
 
 # Environments
-post_creator_bot/.env
-.venv
-env/
+**/.env
 venv/
-ENV/
-env.bak/
-venv.bak/
+**/service_account.json
 
 # mypy
 .mypy_cache/
@@ -22,4 +18,3 @@ dmypy.json
 
 # PyCharm
 .idea/
-post_creator_bot/service_account.json

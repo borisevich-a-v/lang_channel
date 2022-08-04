@@ -1,7 +1,7 @@
 from telegram import Bot
 
-from post_creator_bot.src.config import settings
-from post_creator_bot.src.google_sheets import SpreadSheet
+from lang_channel.src.config import settings
+from lang_channel.src.google_sheets import SpreadSheet
 
 
 async def post_post(bot: Bot, registry: SpreadSheet):

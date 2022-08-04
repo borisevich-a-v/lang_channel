@@ -6,8 +6,8 @@ import telegram
 from telegram import Update
 from telegram import User as TelegramUser
 
-from post_creator_bot.src.comand_handlers import User
-from post_creator_bot.src.google_sheets import registry
+from lang_channel.src.comand_handlers import User
+from lang_channel.src.google_sheets import registry
 
 UPDATE_LIMIT = 5
 
