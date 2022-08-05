@@ -6,9 +6,9 @@ WORKDIR /app
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
-COPY run.py run.py
+COPY main.py main.py
 COPY src/ src/
 COPY .env .env
 COPY service_account.json /root/.config/gspread/service_account.json
 
-CMD [ "python3", "run.py"]
+CMD [ "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "50051"]

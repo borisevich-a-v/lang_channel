@@ -4,3 +4,5 @@ services:
   lang-channel:
     build: .
     restart: on-failure
+    ports:
+      - '50051:50051'

@@ -1,0 +1,5 @@
+# I want to test requirements with last version
+fastapi[all]
+python-telegram-bot==20.0a2
+Pillow
+gspread

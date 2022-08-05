@@ -3,15 +3,14 @@ from enum import Enum
 from pathlib import Path
 from typing import Callable, Optional
 
-import telegram
 from pydantic import BaseModel
 from telegram import PhotoSize, Update
 from telegram import User as TelegramUser
 from telegram import Voice
 
-from lang_channel.src.google_sheets import registry
-from lang_channel.src.preview.get_preview import get_preview
-from lang_channel.src.schemas import Post
+from .google_sheets import registry
+from .preview.get_preview import get_preview
+from .schemas import Post
 
 PREVIEW_PATH = Path("../previews")
 PREVIEW_PATH.mkdir(exist_ok=True)

@@ -4,11 +4,10 @@ from typing import Dict
 
 import telegram
 from fastapi import FastAPI
-
-from lang_channel.src.config import settings
-from lang_channel.src.google_sheets import registry
-from lang_channel.src.post_post import post_post
-from lang_channel.src.telegram_bot.bot import run_bot
+from src.config import settings
+from src.google_sheets import registry
+from src.post_post import post_post
+from src.telegram_bot.bot import run_bot
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO

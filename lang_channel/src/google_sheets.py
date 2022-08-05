@@ -7,8 +7,8 @@ import gspread
 from pydantic import BaseModel
 from telegram import PhotoSize, Voice
 
-from lang_channel.src.config import settings
-from lang_channel.src.schemas import Post
+from .config import settings
+from .schemas import Post
 
 logger = logging.getLogger(__file__)
 
