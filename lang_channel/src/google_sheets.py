@@ -31,9 +31,13 @@ class SpreadSheet:
         self.spreadsheet = self.gc.open(settings.spreadsheet_name)
         self.worksheet = self.spreadsheet.worksheet("posts")
         self.metadata = self.spreadsheet.worksheet("metadata")
+        self.archive = self.spreadsheet.worksheet("archive")
         logger.info("Setup worksheet successfully")
 
-    def save_post(self, post: Post) -> None:
+    def save_post(self, post: Post, worksheet=None) -> None:
+        if worksheet is None:
+            worksheet = self.worksheet
+
         text, photo, voice = post.text, post.photo, post.voice
         logger.info(f"Saving {text=}")
         photo = json.dumps(
@@ -55,9 +59,7 @@ class SpreadSheet:
             }
         )
         row_to_adding = [text, photo, voice]
-        response = self.worksheet.append_row(
-            row_to_adding, include_values_in_response=True
-        )
+        response = worksheet.append_row(row_to_adding, include_values_in_response=True)
         # Add custom exp
         if not response:
             raise ValueError("The post is not saved")
@@ -75,6 +77,12 @@ class SpreadSheet:
 
             posts.append(Post(text=text, photo=photo, voice=voice))
         return posts
+
+    def get_next_post_and_move_it_to_archive(self) -> Post:
+        post = self.get_next_posts(1)[0]
+        self.save_post(post, worksheet=self.archive)
+        self.worksheet.delete_row(1)
+        return post
 
 
 registry = SpreadSheet()

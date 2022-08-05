@@ -3,6 +3,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Callable, Optional
 
+import telegram
 from pydantic import BaseModel
 from telegram import PhotoSize, Update
 from telegram import User as TelegramUser
@@ -19,6 +20,7 @@ PREVIEW_PATH.mkdir(exist_ok=True)
 class Pipelines(Enum):
     CREATE_POST = "/create_post"
     NEXT_3_POSTS = "/get_3_next_posts"
+    NEXT_10_POSTS = "/get_10_next_posts"
 
 
 class Result(BaseModel):
@@ -40,11 +42,11 @@ class User(TelegramUser):
         self.tg_user = tg_user
         self.steps = (
             self.begin_post_creating,
+            self.get_3_last_posts,
+            self.get_10_last_posts,
             self.create_post,
-            self.approve_picture_and_text,
             self.get_audio,
             self.approve_post,
-            self.get_3_last_posts,
         )
         self.post_registry = post_registry
 
@@ -54,8 +56,11 @@ class User(TelegramUser):
         self.last_step: Optional[Callable] = None
         self.preview_path: Optional[Path] = None
 
-    async def process_reply(self, update: Update) -> Result:
+    def clear_post(self):
+        # TODO create post class
+        self.voice, self.text, self.photo = None, None, None
 
+    async def process_reply(self, update: Update) -> Result:
         for step in self.steps:
             if result := await step(update):
                 if result.success is True:
@@ -71,12 +76,12 @@ class User(TelegramUser):
         if self.last_step != self.begin_post_creating:
             return None
         try:
-            ch_text, ru_text, transcription = update.message.text.split("\n")
+            ch_text, ru_text, transcription, hashtags = update.message.text.split("\n")
+
         except ValueError:
             return Result(
-                success=False, response_message="Вроде бы вы отравили не три строки"
+                success=False, response_message="Вроде бы вы отравили не четыре строки"
             )
-        self.text = "\n".join([ch_text, ru_text, transcription])
         try:
             preview = get_preview(ch_text)
             self.preview_path = PREVIEW_PATH / f"{self.id}.jpeg"
@@ -86,29 +91,29 @@ class User(TelegramUser):
             return Result(
                 success=False, response_message="Что-то не так с созданием превью"
             )
-
         if not self.preview_path:
             raise ValueError()  # fix
         with open(self.preview_path, "rb") as fout:
             result = await self.tg_user.send_photo(photo=fout, caption=self.text)
             self.photo = result.photo[0]
+        ch_text = f"🇨🇳 {ch_text}"
+        ru_text = f"🇷🇺 {ru_text}"
+        transcription = f"🗣 {transcription}"
+        self.text = "\n\n".join([ch_text, ru_text, transcription, hashtags])
+
         return Result(
             success=True,
-            response_message="Проверьте, что всё в порядке и ответьте да/нет",
+            response_message="Запишите аудио",
         )
 
-    async def approve_picture_and_text(self, update: Update):
+    async def get_audio(self, update: Update):
         if self.last_step != self.create_post:
             return None
-        if update.message.text.lower() in ("норм", "да", "yes", "是"):
-            return Result(success=True, response_message="Отлично, запишите аудио")
-        if update.message.text.lower() in ("нет", "не совсем", "no", "не норм", "不是"):
-            return Result(success=False, response_message="Тогда давай всё сначала")
 
-    async def get_audio(self, update: Update):
-        if self.last_step != self.approve_picture_and_text:
-            return None
         self.voice = update.message.voice
+        if self.voice is None:
+            return None
+
         if not self.preview_path:  # fix
             raise ValueError()
         with open(self.preview_path, "rb") as fout:
@@ -135,7 +140,8 @@ class User(TelegramUser):
     async def begin_post_creating(self, update: Update) -> Optional[Result]:
         command = update.message.text
         if command == Pipelines.CREATE_POST.value:
-            response_message = "Отправь три строки вот в таком формате:\n\nФраза на китайском.\nФраза на русском\nПиньинь"
+            response_message = "Отправь четыре строки вот в таком формате:\n\nФраза на китайском.\nФраза на русском\nПиньинь\nХэштэги"
+            self.clear_post()
             return Result(
                 response_message=response_message, pipeline=Pipelines.CREATE_POST
             )
@@ -144,12 +150,20 @@ class User(TelegramUser):
     async def get_3_last_posts(self, update: Update) -> Optional[Result]:
         command = update.message.text
         if command == Pipelines.NEXT_3_POSTS.value:
-
-            posts = registry.get_next_posts(amount=3)
-            for i, post in enumerate(posts):
-                await self.tg_user.send_message(text="=" * 10 + f"Пост {i}:" + "=" * 10)
-                await self.tg_user.send_photo(photo=post.photo, caption=post.text)
-                await self.tg_user.send_voice(voice=post.voice)
-
+            await self._send_n_last_posts(3)
             return Result(response_message=None, pipeline=Pipelines.NEXT_3_POSTS)
         return None
+
+    async def get_10_last_posts(self, update: Update) -> Optional[Result]:
+        command = update.message.text
+        if command == Pipelines.NEXT_10_POSTS.value:
+            await self._send_n_last_posts(10)
+            return Result(response_message=None, pipeline=Pipelines.NEXT_3_POSTS)
+        return None
+
+    async def _send_n_last_posts(self, n: int) -> None:
+        posts = registry.get_next_posts(amount=n)
+        for i, post in enumerate(posts):
+            await self.tg_user.send_message(text="=" * 10 + f"Пост {i + 1}:" + "=" * 10)
+            await self.tg_user.send_photo(photo=post.photo, caption=post.text)
+            await self.tg_user.send_voice(voice=post.voice)

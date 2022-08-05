@@ -43,11 +43,12 @@ async def run_bot(bot):
     print("start")
     users = []
     async for update in get_updates(bot):
-        print(update.message.text)
         try:
+            print(update.message.text)
             user = get_or_create_user(update.message.from_user, users)
         except Exception:
             traceback.print_exc()
+            continue
         try:
             result = await user.process_reply(update)
             if result.response_message:
