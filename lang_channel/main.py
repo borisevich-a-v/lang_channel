@@ -15,7 +15,7 @@ logging.basicConfig(
 )
 
 app = FastAPI()
-bot = telegram.Bot(token=settings.token)
+bot = telegram.Bot(token=settings.tg_bot_token)
 
 
 @app.on_event("startup")
@@ -30,8 +30,8 @@ async def get_status() -> Dict[str, str]:
 
 @app.post("/publish_post", responses={200: {"description": "Post posted successfully"}})
 async def publish_post() -> Dict[str, str]:
-    magic_number_s, magic_number_m = 10, 7
-    time_to_sleep = randint(magic_number_s, 60 * magic_number_m)
+    magic_number_min, magic_number_max = 10, 7 * 60
+    time_to_sleep = randint(magic_number_min, magic_number_max)
     await asyncio.sleep(time_to_sleep)
     await post_post(bot, registry)
     return {"description": "Post posted successfully"}

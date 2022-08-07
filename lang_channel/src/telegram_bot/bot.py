@@ -3,11 +3,10 @@ import traceback
 from typing import AsyncIterator, List
 
 import telegram
-from telegram import Update
-from telegram import User as TelegramUser
+from telegram import Update, User
 
-from ..comand_handlers import User
 from ..google_sheets import registry
+from .comand_handlers import UserContext
 
 UPDATE_LIMIT = 5
 
@@ -30,17 +29,16 @@ async def get_updates(bot_instance) -> AsyncIterator[Update]:
             yield update
 
 
-def get_or_create_user(tg_user: TelegramUser, users: List[User]) -> User:
+def get_or_create_user(tg_user: User, users: List[UserContext]) -> UserContext:
     for user in users:
         if user.id == tg_user.id:
             return user
-    new_user = User(tg_user, registry)
+    new_user = UserContext(tg_user, registry)
     users.append(new_user)
     return new_user
 
 
 async def run_bot(bot):
-    print("start")
     users = []
     async for update in get_updates(bot):
         try:

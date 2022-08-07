@@ -4,13 +4,12 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from pydantic import BaseModel
-from telegram import PhotoSize, Update
-from telegram import User as TelegramUser
-from telegram import Voice
+from telegram import Update, User
 
-from .google_sheets import registry
-from .preview.get_preview import get_preview
-from .schemas import Post
+from ..config import settings
+from ..google_sheets import registry
+from ..preview.get_preview import get_preview
+from ..schemas import FinishedPost, Post
 
 PREVIEW_PATH = Path("../previews")
 PREVIEW_PATH.mkdir(exist_ok=True)
@@ -35,11 +34,14 @@ class RequestProcessingFlow:
         self.steps = steps
 
 
-class User(TelegramUser):
-    def __init__(self, tg_user: TelegramUser, post_registry):
+class UserContext:
+    def __init__(self, tg_user: User, post_registry):
         self.id = tg_user.id
         self.tg_user = tg_user
+        self.post_registry = post_registry
+
         self.steps = (
+            self.check_user,
             self.begin_post_creating,
             self.get_3_last_posts,
             self.get_10_last_posts,
@@ -47,17 +49,10 @@ class User(TelegramUser):
             self.get_audio,
             self.approve_post,
         )
-        self.post_registry = post_registry
 
-        self.text: Optional[str] = None
-        self.photo: Optional[PhotoSize] = None
-        self.voice: Optional[Voice] = None
+        self.post = Post()
         self.last_step: Optional[Callable] = None
         self.preview_path: Optional[Path] = None
-
-    def clear_post(self):
-        # TODO create post class
-        self.voice, self.text, self.photo = None, None, None
 
     async def process_reply(self, update: Update) -> Result:
         for step in self.steps:
@@ -71,12 +66,17 @@ class User(TelegramUser):
         response = "Хмм. Не могу понять. Попробуй начать по новой"
         return Result(success=False, response_message=response)
 
+    async def check_user(self, update: Update):
+        user_id = str(update.message.from_user.id)
+        if user_id not in settings.allowed_users:
+            return Result(success=False, response_message="401: contact bot admin pls")
+        return None
+
     async def create_post(self, update: Update):
         if self.last_step != self.begin_post_creating:
             return None
         try:
             ch_text, ru_text, transcription, hashtags = update.message.text.split("\n")
-
         except ValueError:
             return Result(
                 success=False, response_message="Вроде бы вы отравили не четыре строки"
@@ -93,12 +93,12 @@ class User(TelegramUser):
         if not self.preview_path:
             raise ValueError()  # fix
         with open(self.preview_path, "rb") as fout:
-            result = await self.tg_user.send_photo(photo=fout, caption=self.text)
-            self.photo = result.photo[0]
+            result = await self.tg_user.send_photo(photo=fout)
+            self.post.photo = result.photo[0]
         ch_text = f"🇨🇳 {ch_text}"
         ru_text = f"🇷🇺 {ru_text}"
         transcription = f"🗣 {transcription}"
-        self.text = "\n\n".join([ch_text, ru_text, transcription, hashtags])
+        self.post.text = "\n\n".join([ch_text, ru_text, transcription, hashtags])
 
         return Result(
             success=True,
@@ -109,15 +109,15 @@ class User(TelegramUser):
         if self.last_step != self.create_post:
             return None
 
-        self.voice = update.message.voice
-        if self.voice is None:
+        self.post.voice = update.message.voice
+        if self.post.voice is None:
             return None
 
         if not self.preview_path:  # fix
             raise ValueError()
         with open(self.preview_path, "rb") as fout:
-            await self.tg_user.send_photo(photo=fout, caption=self.text)
-        await self.tg_user.send_voice(self.voice)
+            await self.tg_user.send_photo(photo=fout, caption=self.post.text)
+        await self.tg_user.send_voice(self.post.text)
         return Result(
             success=True,
             response_message="Теперь проверь пост целиком и ответь норм/не норм",
@@ -127,7 +127,7 @@ class User(TelegramUser):
         if self.last_step != self.get_audio:
             return None
         if update.message.text.lower() in ("норм", "да", "yes", "是"):
-            post_to_save = Post(text=self.text, photo=self.photo, voice=self.voice)
+            post_to_save = FinishedPost.parse_obj(self.post)
             registry.save_post(post_to_save)
             return Result(
                 success=True,
@@ -140,7 +140,7 @@ class User(TelegramUser):
         command = update.message.text
         if command == Pipelines.CREATE_POST.value:
             response_message = "Отправь четыре строки вот в таком формате:\n\nФраза на китайском.\nФраза на русском\nПиньинь\nХэштэги"
-            self.clear_post()
+            self.post = Post()
             return Result(
                 response_message=response_message, pipeline=Pipelines.CREATE_POST
             )

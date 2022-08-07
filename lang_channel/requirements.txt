@@ -1,5 +1,8 @@
-# I want to test requirements with last version
+# I want to use last versions of libraries
 fastapi[all]
 python-telegram-bot==20.0a2
 Pillow
 gspread
+
+# dev
+pytest
