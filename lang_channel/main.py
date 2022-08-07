@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from random import randint
 from typing import Dict
 
 import telegram
@@ -29,5 +30,8 @@ async def get_status() -> Dict[str, str]:
 
 @app.post("/publish_post", responses={200: {"description": "Post posted successfully"}})
 async def publish_post() -> Dict[str, str]:
+    magic_number_s, magic_number_m = 10, 7
+    time_to_sleep = randint(magic_number_s, 60 * magic_number_m)
+    await asyncio.sleep(time_to_sleep)
     await post_post(bot, registry)
     return {"description": "Post posted successfully"}
