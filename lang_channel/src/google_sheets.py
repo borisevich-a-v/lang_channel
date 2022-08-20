@@ -1,16 +1,14 @@
 import json
-import logging
 from datetime import datetime
 from typing import List
 
 import gspread
+from loguru import logger
 from pydantic import BaseModel
 from telegram import PhotoSize, Voice
 
 from .config import settings
-from .schemas import FinishedPost, Post
-
-logger = logging.getLogger(__file__)
+from .schemas import FinishedPost
 
 
 class Row(BaseModel):
@@ -37,8 +35,7 @@ class SpreadSheet:
     def save_post(self, post: FinishedPost, worksheet=None) -> None:
         if worksheet is None:
             worksheet = self.worksheet
-        logger.info(f"Saving {post.text=}")
-
+        logger.info(f"Saving post {post.id_}")
         photo = json.dumps(
             {
                 "file_id": post.photo.file_id,  # type: ignore
@@ -57,23 +54,26 @@ class SpreadSheet:
                 "file_unique_id": post.voice.file_unique_id,  # type: ignore
             }
         )
-        row_to_adding = [post.text, photo, voice]
+        id_ = post.voice.file_id  # type: ignore
+        row_to_adding = [id_, post.text, photo, voice]
         response = worksheet.append_row(row_to_adding, include_values_in_response=True)
         # Add custom exp
         if not response:
-            raise ValueError("The post is not saved")
-        logger.info(f"{post.text=} saved")
+            raise ValueError("The post was not saved")
+        logger.info(f"Post {post.id_} was saved")
 
     def get_next_posts(self, amount) -> List[FinishedPost]:
+        logger.info(f"Get {amount} posts")
         values = self.worksheet.get_values(f"A1:C{amount}")
         posts = []
         for row in values:
-            text = row[0]
-            photo_dict = json.loads(row[1])
+            id_ = row[0]
+            text = row[1]
+            photo_dict = json.loads(row[2])
             photo = PhotoSize(**photo_dict)
-            voice_dict = json.loads(row[2])
+            voice_dict = json.loads(row[3])
             voice = Voice(**voice_dict)
-            post = FinishedPost(text=text, photo=photo, voice=voice)
+            post = FinishedPost(id_=id_, text=text, photo=photo, voice=voice)
             posts.append(post)
         return posts
 

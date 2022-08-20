@@ -3,6 +3,7 @@ import traceback
 from typing import AsyncIterator, List
 
 import telegram
+from loguru import logger
 from telegram import Update, User
 
 from ..google_sheets import registry
@@ -38,22 +39,25 @@ def get_or_create_user(tg_user: User, users: List[UserContext]) -> UserContext:
     return new_user
 
 
+async def process_update(update: Update, users):
+    logger.info(
+        f"Received message from {update.message.from_user.name}({update.message.from_user.id}):"
+        f" {update.message.voice=}, {update.message.text=}"
+    )
+    user = get_or_create_user(update.message.from_user, users)
+    result = await user.process_reply(update)
+    if result.response_message:
+        await user.tg_user.send_message(
+            text=result.response_message,
+            reply_to_message_id=update.message.message_id,
+        )
+
+
 async def run_bot(bot):
-    users = []
+    users = []  # TODO
     async for update in get_updates(bot):
         try:
-            print(update.message.text)
-            user = get_or_create_user(update.message.from_user, users)
-        except Exception:
-            traceback.print_exc()
-            continue
-        try:
-            result = await user.process_reply(update)
-            if result.response_message:
-                await user.tg_user.send_message(
-                    text=result.response_message,
-                    reply_to_message_id=update.message.message_id,
-                )
-        except Exception:
+            await process_update(update, users)
+        except:
             traceback.print_exc()
             continue

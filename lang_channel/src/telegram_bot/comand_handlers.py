@@ -3,6 +3,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Callable, Optional
 
+from loguru import logger
 from pydantic import BaseModel
 from telegram import Update, User
 
@@ -13,6 +14,9 @@ from ..schemas import FinishedPost, Post
 
 PREVIEW_PATH = Path("../previews")
 PREVIEW_PATH.mkdir(exist_ok=True)
+
+user_response_yes = ("норм", "да", "yes", "是")
+user_response_no = ("нет", "не совсем", "no", "не норм", "不是")
 
 
 class Pipelines(Enum):
@@ -36,6 +40,7 @@ class RequestProcessingFlow:
 
 class UserContext:
     def __init__(self, tg_user: User, post_registry):
+        logger.info(f"Creating new user context for {tg_user.name} (id={tg_user.id})")
         self.id = tg_user.id
         self.tg_user = tg_user
         self.post_registry = post_registry
@@ -55,6 +60,7 @@ class UserContext:
         self.preview_path: Optional[Path] = None
 
     async def process_reply(self, update: Update) -> Result:
+        logger.info(f"Process {update.message} for {self.tg_user.name}")
         for step in self.steps:
             if result := await step(update):
                 if result.success is True:
@@ -72,25 +78,24 @@ class UserContext:
             return Result(success=False, response_message="401: contact bot admin pls")
         return None
 
+    def _is_text_for_post(self, update: Update) -> bool:
+        return update.message.text and len(update.message.text.split("\n")) == 4
+
     async def receive_post_text(self, update: Update):
-        if self.last_step != self.create_post and len(update.message.text.split("\n")) != 4:
+        if self.last_step != self.create_post and not self._is_text_for_post(update):
             return None
         self.post = Post()
         try:
             ch_text, ru_text, transcription, hashtags = update.message.text.split("\n")
         except ValueError:
-            return Result(
-                success=False, response_message="Вроде бы вы отравили не четыре строки"
-            )
+            return Result(success=False, response_message="Вроде бы вы отравили не четыре строки")
         try:
             preview = get_preview(ch_text)
             self.preview_path = PREVIEW_PATH / f"{self.id}.jpeg"
             preview.save(self.preview_path)
         except Exception:
             traceback.print_exc()
-            return Result(
-                success=False, response_message="Что-то не так с созданием превью"
-            )
+            return Result(success=False, response_message="Что-то не так с созданием превью")
         if not self.preview_path:
             raise ValueError()  # fix
         with open(self.preview_path, "rb") as fout:
@@ -106,13 +111,16 @@ class UserContext:
             response_message="Запишите аудио",
         )
 
-    async def receive_audio(self, update: Update):
+    async def receive_audio(self, update: Update) -> Optional[Result]:
         if self.last_step != self.receive_post_text:
             return None
-
-        self.post.voice = update.message.voice
         if self.post.voice is None:
             return None
+        result = await self._receive_audio(update)
+        return result
+
+    async def _receive_audio(self, update: Update) -> Optional[Result]:
+        self.post.voice = update.message.voice
 
         if not self.preview_path:  # fix
             raise ValueError()
@@ -124,27 +132,33 @@ class UserContext:
             response_message="Теперь проверь пост целиком и ответь норм/не норм",
         )
 
-    async def approve_post(self, update: Update):
-        if self.last_step != self.receive_audio:
+    async def approve_post(self, update: Update) -> Optional[Result]:
+        if self.last_step not in (self.receive_audio, self.approve_post):
             return None
-        if update.message.text.lower() in ("норм", "да", "yes", "是"):
+
+        if update.message.voice:
+            result = await self._receive_audio(update)
+            return result
+
+        if update.message.text.lower() in user_response_yes:
             post_to_save = FinishedPost.parse_obj(self.post)
             registry.save_post(post_to_save)
             return Result(
                 success=True,
                 response_message="Отлично, пост сохранен в конец очереди",
             )
-        if update.message.text.lower() in ("нет", "не совсем", "no", "не норм", "不是"):
+        if update.message.text.lower() in user_response_no:
             return Result(success=False, response_message="Тогда давай всё сначала")
+        return None
 
     async def create_post(self, update: Update) -> Optional[Result]:
         command = update.message.text
         if command == Pipelines.CREATE_POST.value:
-            response_message = "Отправь четыре строки вот в таком формате:\n\nФраза на китайском.\nФраза на русском\nПиньинь\nХэштэги"
-            self.post = Post()
-            return Result(
-                response_message=response_message, pipeline=Pipelines.CREATE_POST
+            response_message = (
+                "Отправь четыре строки вот в таком формате:\n\nФраза на китайском.\nФраза на русском\nПиньинь\nХэштэги"
             )
+            self.post = Post()
+            return Result(response_message=response_message, pipeline=Pipelines.CREATE_POST)
         return None
 
     async def get_3_last_posts(self, update: Update) -> Optional[Result]:

@@ -11,10 +11,10 @@ class Settings(BaseSettings):
     channel_name: str
     spreadsheet_name: str = "post_list"
     allowed_users: List[str] = [
-        "240856036",
+        "240856036",  # my telegram
         "1292759426",
-    ]  # the first id is my telegram
-    str_fmt = "%Y/%m/%d, %H:%M:%S"
+    ]
+    data_time_format = "%Y/%m/%d, %H:%M:%S"
 
     class Config:
         env_file = dotenv_path
