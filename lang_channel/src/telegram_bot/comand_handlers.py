@@ -42,11 +42,11 @@ class UserContext:
 
         self.steps = (
             self.check_user,
-            self.begin_post_creating,
             self.get_3_last_posts,
             self.get_10_last_posts,
             self.create_post,
-            self.get_audio,
+            self.receive_post_text,
+            self.receive_audio,
             self.approve_post,
         )
 
@@ -63,7 +63,7 @@ class UserContext:
                 else:
                     self.last_step = None
                     return result
-        response = "Хмм. Не могу понять. Попробуй начать по новой"
+        response = "Хмм. Не могу понять. Попробуй исправить сообщение или начать по новой"
         return Result(success=False, response_message=response)
 
     async def check_user(self, update: Update):
@@ -72,9 +72,10 @@ class UserContext:
             return Result(success=False, response_message="401: contact bot admin pls")
         return None
 
-    async def create_post(self, update: Update):
-        if self.last_step != self.begin_post_creating:
+    async def receive_post_text(self, update: Update):
+        if self.last_step != self.create_post and len(update.message.text.split("\n")) != 4:
             return None
+        self.post = Post()
         try:
             ch_text, ru_text, transcription, hashtags = update.message.text.split("\n")
         except ValueError:
@@ -105,8 +106,8 @@ class UserContext:
             response_message="Запишите аудио",
         )
 
-    async def get_audio(self, update: Update):
-        if self.last_step != self.create_post:
+    async def receive_audio(self, update: Update):
+        if self.last_step != self.receive_post_text:
             return None
 
         self.post.voice = update.message.voice
@@ -117,14 +118,14 @@ class UserContext:
             raise ValueError()
         with open(self.preview_path, "rb") as fout:
             await self.tg_user.send_photo(photo=fout, caption=self.post.text)
-        await self.tg_user.send_voice(self.post.text)
+        await self.tg_user.send_voice(self.post.voice)
         return Result(
             success=True,
             response_message="Теперь проверь пост целиком и ответь норм/не норм",
         )
 
     async def approve_post(self, update: Update):
-        if self.last_step != self.get_audio:
+        if self.last_step != self.receive_audio:
             return None
         if update.message.text.lower() in ("норм", "да", "yes", "是"):
             post_to_save = FinishedPost.parse_obj(self.post)
@@ -136,7 +137,7 @@ class UserContext:
         if update.message.text.lower() in ("нет", "не совсем", "no", "не норм", "不是"):
             return Result(success=False, response_message="Тогда давай всё сначала")
 
-    async def begin_post_creating(self, update: Update) -> Optional[Result]:
+    async def create_post(self, update: Update) -> Optional[Result]:
         command = update.message.text
         if command == Pipelines.CREATE_POST.value:
             response_message = "Отправь четыре строки вот в таком формате:\n\nФраза на китайском.\nФраза на русском\nПиньинь\nХэштэги"
