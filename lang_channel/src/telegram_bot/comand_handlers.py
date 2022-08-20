@@ -9,8 +9,8 @@ from telegram import Update, User
 
 from ..config import settings
 from ..google_sheets import registry
-from ..preview.get_preview import get_preview
-from ..schemas import FinishedPost, Post
+from ..preview.get_preview import ToManyLinesError, get_preview
+from ..schemas import FinishedPost, RawPost
 
 PREVIEW_PATH = Path("../previews")
 PREVIEW_PATH.mkdir(exist_ok=True)
@@ -55,12 +55,12 @@ class UserContext:
             self.approve_post,
         )
 
-        self.post = Post()
+        self.post = RawPost()
         self.last_step: Optional[Callable] = None
         self.preview_path: Optional[Path] = None
 
     async def process_reply(self, update: Update) -> Result:
-        logger.info(f"Process {update.message} for {self.tg_user.name}")
+        logger.info(f"Process {update.message.id} for {self.tg_user.name}")
         for step in self.steps:
             if result := await step(update):
                 if result.success is True:
@@ -84,7 +84,7 @@ class UserContext:
     async def receive_post_text(self, update: Update):
         if self.last_step != self.create_post and not self._is_text_for_post(update):
             return None
-        self.post = Post()
+        self.post = RawPost()
         try:
             ch_text, ru_text, transcription, hashtags = update.message.text.split("\n")
         except ValueError:
@@ -93,6 +93,8 @@ class UserContext:
             preview = get_preview(ch_text)
             self.preview_path = PREVIEW_PATH / f"{self.id}.jpeg"
             preview.save(self.preview_path)
+        except ToManyLinesError as exp:
+            return Result(success=False, response_message=str(exp))
         except Exception:
             traceback.print_exc()
             return Result(success=False, response_message="Что-то не так с созданием превью")
@@ -112,9 +114,7 @@ class UserContext:
         )
 
     async def receive_audio(self, update: Update) -> Optional[Result]:
-        if self.last_step != self.receive_post_text:
-            return None
-        if self.post.voice is None:
+        if self.last_step != self.receive_post_text or update.message.voice is None:
             return None
         result = await self._receive_audio(update)
         return result
@@ -141,7 +141,7 @@ class UserContext:
             return result
 
         if update.message.text.lower() in user_response_yes:
-            post_to_save = FinishedPost.parse_obj(self.post)
+            post_to_save = FinishedPost.parse_raw_post(self.post)
             registry.save_post(post_to_save)
             return Result(
                 success=True,
@@ -157,7 +157,7 @@ class UserContext:
             response_message = (
                 "Отправь четыре строки вот в таком формате:\n\nФраза на китайском.\nФраза на русском\nПиньинь\nХэштэги"
             )
-            self.post = Post()
+            self.post = RawPost()
             return Result(response_message=response_message, pipeline=Pipelines.CREATE_POST)
         return None
 

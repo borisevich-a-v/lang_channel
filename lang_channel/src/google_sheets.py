@@ -54,8 +54,7 @@ class SpreadSheet:
                 "file_unique_id": post.voice.file_unique_id,  # type: ignore
             }
         )
-        id_ = post.voice.file_id  # type: ignore
-        row_to_adding = [id_, post.text, photo, voice]
+        row_to_adding = [post.id_, post.text, photo, voice]
         response = worksheet.append_row(row_to_adding, include_values_in_response=True)
         # Add custom exp
         if not response:
@@ -64,7 +63,7 @@ class SpreadSheet:
 
     def get_next_posts(self, amount) -> List[FinishedPost]:
         logger.info(f"Get {amount} posts")
-        values = self.worksheet.get_values(f"A1:C{amount}")
+        values = self.worksheet.get_values(f"A1:Z{amount}")
         posts = []
         for row in values:
             id_ = row[0]

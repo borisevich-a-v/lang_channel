@@ -1,10 +1,11 @@
 from typing import Optional
+from uuid import uuid4
 
 from pydantic import BaseModel
 from telegram import PhotoSize, Voice
 
 
-class Post(BaseModel):
+class RawPost(BaseModel):
     text: Optional[str]
     photo: Optional[PhotoSize]
     voice: Optional[Voice]
@@ -12,14 +13,16 @@ class Post(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    def is_post_ready(self) -> bool:
+    def is_ready(self) -> bool:
         return all([self.text, self.photo, self.voice])
 
 
-class FinishedPost(Post):
+class FinishedPost(RawPost):
     id_: str
+    text: str
+    photo: PhotoSize
+    voice: Voice
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if not self.is_post_ready():
-            raise Exception()  # TODO
+    @classmethod
+    def parse_raw_post(cls, raw_post: RawPost):
+        return cls(id_=str(uuid4()), text=raw_post.text, photo=raw_post.photo, voice=raw_post.voice)

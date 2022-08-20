@@ -41,7 +41,7 @@ def get_or_create_user(tg_user: User, users: List[UserContext]) -> UserContext:
 
 async def process_update(update: Update, users):
     logger.info(
-        f"Received message from {update.message.from_user.name}({update.message.from_user.id}):"
+        f"Received message {update.message.id} from {update.message.from_user.name}:"
         f" {update.message.voice=}, {update.message.text=}"
     )
     user = get_or_create_user(update.message.from_user, users)
