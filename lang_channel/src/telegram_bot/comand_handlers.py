@@ -103,6 +103,7 @@ class UserContext:
         with open(self.preview_path, "rb") as fout:
             result = await self.tg_user.send_photo(photo=fout)
             self.post.photo = result.photo[0]
+        ch_text = ch_text.replace("\\n", " ")
         ch_text = f"🇨🇳 {ch_text}"
         ru_text = f"🇷🇺 {ru_text}"
         transcription = f"🗣 {transcription}"
