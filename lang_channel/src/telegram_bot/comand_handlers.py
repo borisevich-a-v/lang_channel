@@ -11,6 +11,7 @@ from ..config import settings
 from ..google_sheets import registry
 from ..preview.get_preview import ToManyLinesError, get_preview
 from ..schemas import FinishedPost, RawPost
+from ..validators.hashtags import ValidationError, validate_hashtags
 
 PREVIEW_PATH = Path("../previews")
 PREVIEW_PATH.mkdir(exist_ok=True)
@@ -62,7 +63,8 @@ class UserContext:
     async def process_reply(self, update: Update) -> Result:
         logger.info(f"Process {update.message.id} for {self.tg_user.name}")
         for step in self.steps:
-            if result := await step(update):
+            result = await step(update)
+            if result:
                 if result.success is True:
                     self.last_step = step
                     return result
@@ -107,6 +109,14 @@ class UserContext:
         ch_text = f"🇨🇳 {ch_text}"
         ru_text = f"🇷🇺 {ru_text}"
         transcription = f"🗣 {transcription}"
+
+        try:
+            validate_hashtags(hashtags)
+        except ValidationError as exp:
+            return Result(success=False, response_message=str(exp))
+        if hashtags.strip() == "#":
+            hashtags = ""
+
         self.post.text = "\n\n".join([ch_text, ru_text, transcription, hashtags])
 
         return Result(

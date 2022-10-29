@@ -1,5 +1,4 @@
 import asyncio
-import logging
 from random import randint
 from typing import Dict
 
