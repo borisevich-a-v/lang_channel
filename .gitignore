@@ -21,4 +21,4 @@ dmypy.json
 
 # Custom
 /deploy.sh
-*.log
+**/logs.log
