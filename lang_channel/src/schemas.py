@@ -4,6 +4,7 @@ from uuid import uuid4
 from pydantic import BaseModel
 from telegram import PhotoSize, Voice
 
+print("delete me")
 
 class RawPost(BaseModel):
     text: Optional[str]
