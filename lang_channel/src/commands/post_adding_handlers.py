@@ -1,17 +1,35 @@
+import traceback
+from abc import abstractmethod
 from pathlib import Path
 from typing import Optional
 
+from src.commands.interfaces import IHandler, Result
+from src.common import NO_RESPONSE, YES_RESPONSE, HumanReadableException
 from src.google_sheets import registry
 from src.preview.get_preview import get_preview
-from src.schemas import FinishedPost
-from src.telegram_bot.commands.common import NO_RESPONSE, YES_RESPONSE, HumanReadableException, PostHandler, Result
+from src.schemas import FinishedPost, RawPost
 from src.validators.hashtags import validate_hashtags
-from telegram import Update
+from telegram import Update, User
 
 PREVIEWS_DIRECTORY = Path("../previews")
 PREVIEWS_DIRECTORY.mkdir(exist_ok=True)
 
 APPROVE_QUERY_MESSAGE = "Check post and approve (да/yes) or disapprove (нет/no) post"
+
+
+class PostHandler(IHandler):
+    def __init__(self, user: User, post: RawPost):
+        self.user = user
+        self.post = post
+
+    @abstractmethod
+    async def execute(self, update: Update):
+        ...
+
+    @classmethod
+    @abstractmethod
+    def is_update_processable(cls, update: Update) -> bool:
+        ...
 
 
 class PostTextHandler(PostHandler):
@@ -20,6 +38,7 @@ class PostTextHandler(PostHandler):
             await self.receive_post_text(update)
             return Result(success=True, response_message="Record audio please", post=self.post)
         except Exception as exp:
+            traceback.print_exc()
             return Result(success=False, response_message=str(exp))
 
     @classmethod
@@ -77,6 +96,7 @@ class PostAudioHandler(PostHandler):
             await self.receive_audio(update)
             return Result(success=True, response_message=APPROVE_QUERY_MESSAGE, post=self.post)
         except Exception as exp:
+            traceback.print_exc()
             return Result(success=False, response_message=str(exp))
 
     async def receive_audio(self, update: Update):
@@ -96,6 +116,7 @@ class PostApproveAndSaveHandler(PostHandler):
             result = await self.approve_post(update)
             return result
         except Exception as exp:
+            traceback.print_exc()
             return Result(success=False, response_message=str(exp))
 
     async def approve_post(self, update: Update) -> Optional[Result]:

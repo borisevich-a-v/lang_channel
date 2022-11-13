@@ -1,10 +1,11 @@
 from typing import Optional
 
-from src.telegram_bot.commands.common import Result, is_user_allowed
+from src.commands.interfaces import IPipeline, Result
+from src.common import is_user_allowed
 from telegram import Update, User
 
 
-class CreatePostContext:
+class CreatePostPipeline(IPipeline):
     def __init__(self, user: User):
         self.user = user
 

@@ -1,12 +1,13 @@
 from typing import Optional
 
+from src.commands.interfaces import IPipeline, Result
+from src.commands.post_adding_handlers import PostApproveAndSaveHandler, PostAudioHandler, PostTextHandler
+from src.common import is_user_allowed
 from src.schemas import RawPost
-from src.telegram_bot.commands.common import Result, is_user_allowed
-from src.telegram_bot.commands.post_adding_handlers import PostApproveAndSaveHandler, PostAudioHandler, PostTextHandler
 from telegram import Update, User
 
 
-class PostAddingContext:
+class PostAddingPipeline(IPipeline):
     STEPS_ORDER = (
         PostTextHandler,
         PostAudioHandler,

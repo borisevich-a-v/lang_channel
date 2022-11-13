@@ -1,12 +1,12 @@
-from abc import ABC, abstractmethod
 from typing import Optional
 
+from src.commands.interfaces import IHandler, IPipeline, Result
+from src.common import is_user_allowed
 from src.google_sheets import SpreadSheet
-from src.telegram_bot.commands.common import Result, is_user_allowed
 from telegram import Update, User
 
 
-class GetNextPostHandler(ABC):
+class GetNextPostHandler(IHandler):
     COMMAND: str
     POST_AMOUNT: int
 
@@ -14,7 +14,7 @@ class GetNextPostHandler(ABC):
         self.user = user
         self.post_repository = post_repository
 
-    async def execute(self) -> Result:
+    async def execute(self, update: Update) -> Result:
         posts = self.post_repository.get_next_posts(amount=self.POST_AMOUNT)
         for i, post in enumerate(posts):
             await self.user.send_message(text="=" * 10 + f"Пост {i + 1}:" + "=" * 10)
@@ -46,8 +46,8 @@ class GetNext21PostsHandler(GetNextPostHandler):
     POST_AMOUNT = 21
 
 
-class GetNextPostContext:
-    OPTIONS = (
+class GetNextPostPipeline(IPipeline):
+    HANDLERS = (
         GetNext3PostsHandler,
         GetNext10PostsHandler,
         GetNext21PostsHandler,
@@ -61,9 +61,9 @@ class GetNextPostContext:
         if not is_user_allowed(update):
             return Result(success=False, response_message="401: contact bot admin pls")
         result = None
-        for option in self.OPTIONS:
+        for option in self.HANDLERS:
             if option.is_update_processable(update):
-                result = await option(self.user, self.post_repository).execute()
+                result = await option(self.user, self.post_repository).execute(update)
         return result
 
     def __repr__(self):

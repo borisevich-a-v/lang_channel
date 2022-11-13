@@ -38,20 +38,20 @@ class SpreadSheet:
         logger.info(f"Saving post {post.id_}")
         photo = json.dumps(
             {
-                "file_id": post.photo.file_id,  # type: ignore
-                "file_unique_id": post.photo.file_unique_id,  # type: ignore
-                "width": post.photo.width,  # type: ignore
-                "height": post.photo.height,  # type: ignore
-                "file_size": post.photo.file_size,  # type: ignore
+                "file_id": post.photo.file_id,
+                "file_unique_id": post.photo.file_unique_id,
+                "width": post.photo.width,
+                "height": post.photo.height,
+                "file_size": post.photo.file_size,
             }
         )
         voice = json.dumps(
             {
-                "duration": post.voice.duration,  # type: ignore
-                "mime_type": post.voice.mime_type,  # type: ignore
-                "file_id": post.voice.file_id,  # type: ignore
-                "file_size": post.voice.file_size,  # type: ignore
-                "file_unique_id": post.voice.file_unique_id,  # type: ignore
+                "duration": post.voice.duration,
+                "mime_type": post.voice.mime_type,
+                "file_id": post.voice.file_id,
+                "file_size": post.voice.file_size,
+                "file_unique_id": post.voice.file_unique_id,
             }
         )
         row_to_adding = [post.id_, post.text, photo, voice]
@@ -84,17 +84,3 @@ class SpreadSheet:
 
 
 registry = SpreadSheet()
-# registry.get_next_posts()
-
-# photo = PhotoSize(width=90,
-#                   height=51,
-#                   file_id='AgACAgIAAxkDAAIBC2LoGj15e4g2Yz-51PQySvCPSr8KAAK6vDEbZZtBSw6t_i8DlzLTAQADAgADcwADKQQ',
-#                   file_size=811,
-#                   file_unique_id='AQADurwxG2WbQUt4')
-#
-# voice = Voice(
-#     **{'duration': 1, 'mime_type': 'audio/ogg',
-#        'file_id': 'AwACAgIAAxkBAAIBKGLoHDivKGej1f9VIv78VWuPbpzVAALsHgACZZtBS7JadnL2ZtdgKQQ', 'file_size': 5489,
-#        'file_unique_id': 'AgAD7B4AAmWbQUs'}
-# )
-# registry.save_post(text="к\nh\nch", photo=photo, voice=voice)
