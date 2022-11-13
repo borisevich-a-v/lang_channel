@@ -29,4 +29,3 @@ class UserContext:
                 return result
         response = "Hmm, I didn't understood the message. Could you check it and send again?"
         return Result(success=False, response_message=response)
-
