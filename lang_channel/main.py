@@ -10,9 +10,6 @@ from src.google_sheets import registry
 from src.post_post import post_post
 from src.telegram_bot.bot import run_bot
 
-logger.remove()
-logger.configure(handlers=[dict(sink="/logs.log")])
-
 app = FastAPI()
 bot = telegram.Bot(token=settings.tg_bot_token)
 

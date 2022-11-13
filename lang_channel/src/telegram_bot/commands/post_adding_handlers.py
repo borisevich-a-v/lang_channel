@@ -4,7 +4,7 @@ from typing import Optional
 from src.google_sheets import registry
 from src.preview.get_preview import get_preview
 from src.schemas import FinishedPost
-from src.telegram_bot.commands.common import NO_RESPONSE, YES_RESPONSE, HumanReadableException, Result
+from src.telegram_bot.commands.common import NO_RESPONSE, YES_RESPONSE, HumanReadableException, PostHandler, Result
 from src.validators.hashtags import validate_hashtags
 from telegram import Update
 
@@ -26,6 +26,7 @@ class PostTextHandler(PostHandler):
     def is_update_processable(cls, update: Update) -> bool:
         if not cls._is_text_for_post(update):
             return False
+        return True
 
     @staticmethod
     def _is_text_for_post(update: Update) -> bool:
@@ -69,6 +70,7 @@ class PostAudioHandler(PostHandler):
     def is_update_processable(cls, update: Update) -> bool:
         if update.message.voice is None:
             return False
+        return True
 
     async def execute(self, update: Update):
         try:

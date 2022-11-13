@@ -7,19 +7,12 @@ from telegram import Update, User
 
 
 class GetNextPostHandler(ABC):
+    COMMAND: str
+    POST_AMOUNT: int
+
     def __init__(self, user: User, post_repository: SpreadSheet):
         self.user = user
         self.post_repository = post_repository
-
-    @property
-    @abstractmethod
-    def COMMAND(self) -> str:
-        ...
-
-    @property
-    @abstractmethod
-    def POST_AMOUNT(self) -> str:
-        ...
 
     async def execute(self) -> Result:
         posts = self.post_repository.get_next_posts(amount=self.POST_AMOUNT)
@@ -33,6 +26,9 @@ class GetNextPostHandler(ABC):
         if update.message.text == cls.COMMAND:
             return True
         return False
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.POST_AMOUNT=}, {self.user=})"
 
 
 class GetNext3PostsHandler(GetNextPostHandler):
@@ -64,9 +60,11 @@ class GetNextPostContext:
     async def handle_request(self, update: Update) -> Optional[Result]:
         if not is_user_allowed(update):
             return Result(success=False, response_message="401: contact bot admin pls")
-
         result = None
         for option in self.OPTIONS:
             if option.is_update_processable(update):
                 result = await option(self.user, self.post_repository).execute()
         return result
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}({self.user.username})>"
