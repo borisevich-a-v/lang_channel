@@ -1,10 +1,12 @@
 from typing import Optional
 
-from src.commands.interfaces import IPipeline, Result
-from src.commands.post_adding_handlers import PostApproveAndSaveHandler, PostAudioHandler, PostTextHandler
-from src.common import is_user_allowed
+from telegram import User, Update
+
+from src.common import Result, is_user_allowed
 from src.schemas import RawPost
-from telegram import Update, User
+from src.telegram_bot.pipelines.interfaces import IPipeline
+from src.telegram_bot.pipelines.post_creating.handlers import PostTextHandler, PostAudioHandler, \
+    PostApproveAndSaveHandler
 
 
 class PostAddingPipeline(IPipeline):

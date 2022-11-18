@@ -1,13 +1,15 @@
 from typing import List
 
 from loguru import logger
-from src.commands.create_post_handler import CreatePostPipeline
-from src.commands.get_next_post_handlers import GetNextPostPipeline
-from src.commands.interfaces import IPipeline, Result
-from src.commands.post_adding import PostAddingPipeline
 from telegram import Update, User
 
-from ..google_sheets import registry
+from src.common import Result
+from src.google_sheets import registry
+from src.telegram_bot.pipelines.commands.create_post_instruction import CreatePostCommand
+from src.telegram_bot.pipelines.commands.get_next_posts import GetNextPostsCommand
+from src.telegram_bot.pipelines.interfaces import IPipeline
+
+from src.telegram_bot.pipelines.post_creating.pipeline import PostAddingPipeline
 
 
 class UserContext:
@@ -18,9 +20,9 @@ class UserContext:
         self.post_registry = post_registry
 
         self.pipelines: List[IPipeline] = [
-            GetNextPostPipeline(self.tg_user, registry),
+            GetNextPostsCommand(self.tg_user, registry),
             PostAddingPipeline(self.tg_user),
-            CreatePostPipeline(self.tg_user),
+            CreatePostCommand(self.tg_user),
         ]
 
     async def process_reply(self, update: Update) -> Result:

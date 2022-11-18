@@ -3,11 +3,12 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import Optional
 
-from src.commands.interfaces import IHandler, Result
-from src.common import NO_RESPONSE, YES_RESPONSE, HumanReadableException
+from src.common import Result, HumanReadableException
 from src.google_sheets import registry
 from src.preview.get_preview import get_preview
 from src.schemas import FinishedPost, RawPost
+from src.telegram_bot.pipelines.common import YES_RESPONSE, NO_RESPONSE
+from src.telegram_bot.pipelines.interfaces import IHandler
 from src.validators.hashtags import validate_hashtags
 from telegram import Update, User
 

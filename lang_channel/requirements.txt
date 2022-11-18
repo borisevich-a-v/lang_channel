@@ -1,6 +1,4 @@
-# I want to use last versions of libraries
 fastapi[all]
- # alpha version
 python-telegram-bot==20.0a2
 Pillow
 gspread

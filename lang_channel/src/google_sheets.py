@@ -7,8 +7,8 @@ from loguru import logger
 from pydantic import BaseModel
 from telegram import PhotoSize, Voice
 
-from .config import settings
-from .schemas import FinishedPost
+from src.config import settings
+from src.schemas import FinishedPost
 
 
 class Row(BaseModel):

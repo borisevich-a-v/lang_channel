@@ -8,12 +8,11 @@ FONT_PATH = Path(__file__).parent / "chinese.stzhongs.ttf"
 BACKGROUND_PATH = Path(__file__).parent / "background.jpg"
 
 FONT_SIZE = 148
-PADDING_TO_FONT_RATIO = 1 / 8 / 2
+PADDING_TO_FONT_RATIO = 1 / 8 / 2  # font / 8 / sides_amount
 FONT = ImageFont.truetype(str(FONT_PATH), size=FONT_SIZE, layout_engine=ImageFont.LAYOUT_RAQM)
 FILL = "white"
-LANGUAGE = "zh"
+LANGUAGE = "zh"  # chinese
 BACKGROUND = Image.open(BACKGROUND_PATH)
-
 PUNCTUATION_MARKS_WITH_WRONG_WIDTH = "，。、"
 
 
@@ -54,7 +53,7 @@ def get_single_line_preview(text: str, image: Image, draw: ImageDraw.Draw) -> Im
 
 def get_preview(text: str) -> Image:
     if len(text.split("\\n")) > 2:
-        raise HumanReadableException("Text has to contains two lines or fewer")
+        raise HumanReadableException("Text has to contain two lines or fewer")
 
     image = deepcopy(BACKGROUND)
     draw = ImageDraw.Draw(image)

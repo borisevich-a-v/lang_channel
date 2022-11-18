@@ -10,21 +10,6 @@ class HumanReadableException(Exception):
     ...
 
 
-YES_RESPONSE = (
-    "норм",
-    "да",
-    "yes",
-    "是",
-)
-NO_RESPONSE = (
-    "нет",
-    "не совсем",
-    "no",
-    "не норм",
-    "不是",
-)
-
-
 class Result(BaseModel):
     success: bool = True
     response_message: Optional[str]
