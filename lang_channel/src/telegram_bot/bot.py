@@ -4,10 +4,9 @@ from typing import AsyncIterator, List
 
 import telegram
 from loguru import logger
-from telegram import Update, User
-
 from src.google_sheets import registry
-from src.telegram_bot.comand_handlers import UserContext
+from src.pipelines.comand_handlers import UserContext
+from telegram import Update, User
 
 UPDATE_LIMIT = 5
 

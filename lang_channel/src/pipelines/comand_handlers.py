@@ -1,15 +1,13 @@
 from typing import List
 
 from loguru import logger
-from telegram import Update, User
-
 from src.common import Result
 from src.google_sheets import registry
-from src.telegram_bot.pipelines.commands.create_post_instruction import CreatePostCommand
-from src.telegram_bot.pipelines.commands.get_next_posts import GetNextPostsCommand
-from src.telegram_bot.pipelines.interfaces import IPipeline
-
-from src.telegram_bot.pipelines.post_creating.pipeline import PostAddingPipeline
+from src.pipelines.commands.create_post_instruction import CreatePostCommand
+from src.pipelines.commands.get_next_posts import GetNextPostsCommand
+from src.pipelines.interfaces import IPipeline
+from src.pipelines.post_creating.pipeline import PostAddingPipeline
+from telegram import Update, User
 
 
 class UserContext:

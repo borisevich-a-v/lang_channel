@@ -2,15 +2,15 @@ import re
 from re import Pattern
 from typing import Optional
 
-from src.telegram_bot.pipelines.commands.interfaces import ICommand
-from src.telegram_bot.pipelines.interfaces import Result
 from src.common import is_user_allowed
 from src.google_sheets import SpreadSheet
+from src.pipelines.commands.interfaces import ICommand
+from src.pipelines.interfaces import Result
 from telegram import Update, User
 
 
 class GetNextPostsCommand(ICommand):
-    COMMAND: Pattern = re.Pattern(r"\/get_(([1-2][0-9])|([1-9]))_next_posts")
+    COMMAND: Pattern = re.compile(r"\/get_(([1-2][0-9])|([1-9]))_next_posts")
 
     def __init__(self, user: User, post_repository: SpreadSheet):
         self.user = user

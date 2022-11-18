@@ -1,9 +1,8 @@
 from typing import Optional
 
-from src.common import is_user_allowed, Result
+from src.common import Result, is_user_allowed
+from src.pipelines.interfaces import IPipeline
 from telegram import Update, User
-
-from src.telegram_bot.pipelines.interfaces import IPipeline
 
 
 class CreatePostCommand(IPipeline):

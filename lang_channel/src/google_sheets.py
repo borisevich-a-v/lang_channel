@@ -5,10 +5,9 @@ from typing import List
 import gspread
 from loguru import logger
 from pydantic import BaseModel
-from telegram import PhotoSize, Voice
-
 from src.config import settings
 from src.schemas import FinishedPost
+from telegram import PhotoSize, Voice
 
 
 class Row(BaseModel):
