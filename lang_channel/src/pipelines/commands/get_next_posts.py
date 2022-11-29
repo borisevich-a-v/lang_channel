@@ -42,6 +42,6 @@ class GetNextPostsCommand(ICommand):
 
     @classmethod
     def is_update_processable(cls, update: Update) -> bool:
-        if re.match(cls.COMMAND, update.message.text) is None:
+        if not update.message.text or re.match(cls.COMMAND, update.message.text) is None:
             return False
         return True

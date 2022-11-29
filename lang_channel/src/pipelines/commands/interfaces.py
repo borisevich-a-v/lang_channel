@@ -8,4 +8,4 @@ from src.pipelines.interfaces import IPipeline
 class ICommand(IPipeline, ABC):
     """Command is a single step pipline"""
 
-    HANDLER: Union[Pattern, str]
+    COMMAND: Union[Pattern, str]

@@ -8,7 +8,7 @@ from telegram import Update, User
 
 
 class PostAddingPipeline(IPipeline):
-    STEPS_ORDER = (
+    HANDLERS = (
         PostTextHandler,
         PostAudioHandler,
         PostApproveAndSaveHandler,
@@ -19,26 +19,18 @@ class PostAddingPipeline(IPipeline):
         self.post = RawPost()
         self._next_step_number: int = 0
 
-    @property
-    def next_step(self) -> PostTextHandler:
-        return self.STEPS_ORDER[self._next_step_number]
-
-    def get_next_step_number(self):
-        self._next_step_number += 1
-        if self._next_step_number + 1 > len(self.STEPS_ORDER):
-            self._next_step_number = 0
-
     async def handle_request(self, update: Update) -> Optional[Result]:
         if not is_user_allowed(update):
             return Result(success=False, response_message="401: contact bot admin pls")
 
-        if not self.next_step.is_update_processable(update):
+        step = None
+        for handler in self.HANDLERS:
+            if handler.is_update_processable(update):
+                step = handler(self.user, self.post)
+                break
+        if not step:
             return None
-
-        next_step = self.next_step(self.user, self.post)
-        result = await next_step.execute(update)
-        if result.success:
-            self.get_next_step_number()
+        result = await step.execute(update)
         return result
 
     def __repr__(self):

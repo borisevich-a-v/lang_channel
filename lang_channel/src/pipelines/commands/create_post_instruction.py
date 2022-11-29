@@ -1,17 +1,18 @@
 from typing import Optional
 
 from src.common import Result, is_user_allowed
+from src.pipelines.commands.interfaces import ICommand
 from src.pipelines.interfaces import IPipeline
 from telegram import Update, User
 
 
-class CreatePostCommand(IPipeline):
+class CreatePostCommand(ICommand):
     """Send how to create post instruction to user"""
+
+    COMMAND: str = "/create_post"
 
     def __init__(self, user: User):
         self.user = user
-
-    COMMAND: str = "/create_post"
 
     async def handle_request(self, update: Update) -> Optional[Result]:
         if not is_user_allowed(update):
