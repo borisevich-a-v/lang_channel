@@ -14,7 +14,7 @@ from telegram import Update, User, InlineKeyboardButton, InlineKeyboardMarkup
 PREVIEWS_DIRECTORY = Path("../previews")
 PREVIEWS_DIRECTORY.mkdir(exist_ok=True)
 
-APPROVE, DISAPPROVE = "approve", "disapprove"
+APPROVE, DISAPPROVE = "да", "нет"
 
 
 class PostHandler(IHandler, ABC):
@@ -33,8 +33,8 @@ class PostHandler(IHandler, ABC):
             await self.user.send_message("Record audio for post please.")
         else:
             await self.post.send_to_user(self.user)
-            await self.user.send_message("Great, check post and approve or disapprove post",
-                                         reply_markup=InlineKeyboardMarkup(self.BUTTONS))
+            await self.user.send_message("Great, check post and approve or disapprove post")
+                                         # reply_markup=InlineKeyboardMarkup(self.BUTTONS))
 
 
 class PostTextHandler(PostHandler):
@@ -110,7 +110,6 @@ class PostAudioHandler(PostHandler):
         self.post.voice = update.message.voice
         if not self.post.photo:
             raise HumanReadableException("Looks like photo of post is not saved. Try again please")
-        await self.post.send_to_user(self.user)
 
 
 class PostApproveAndSaveHandler(PostHandler):

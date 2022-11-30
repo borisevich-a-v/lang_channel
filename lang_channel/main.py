@@ -2,21 +2,19 @@ import asyncio
 from random import randint
 from typing import Dict
 
-import telegram
 from fastapi import FastAPI
 from loguru import logger
-from src.config import settings
 from src.google_sheets import registry
 from src.post_post import post_post
-from src.telegram_bot.bot import run_bot
+from src.telegram_bot.bot import LangBot
 
 app = FastAPI()
-bot = telegram.Bot(token=settings.tg_bot_token)
+bot = LangBot()
 
 
 @app.on_event("startup")
 async def startup():
-    asyncio.create_task(run_bot(bot))
+    asyncio.create_task(bot.run_polling())
 
 
 @app.get("/")
@@ -35,12 +33,12 @@ async def publish_post() -> Dict[str, str]:
     return {"description": "Post posted successfully"}
 
 
-@app.get("/notify_admin")
-async def check_and_notify_admin() -> Dict[str, str]:
-    logger.info("Request on endpoint `notify_admin`")
-    posts = registry.get_next_posts(4)
-    if len(posts) > 3:
-        return {"description": "post amount is decent"}
-    text = f"Hi! Could you add new post in post list? There are only {len(posts)} posts 😿"
-    await bot.send_message(chat_id=settings.admin_tg_id, text=text)
-    return {"description": "admin has been notified"}
+# @app.get("/notify_admin")
+# async def check_and_notify_admin() -> Dict[str, str]:
+#     logger.info("Request on endpoint `notify_admin`")
+#     posts = registry.get_next_posts(4)
+#     if len(posts) > 3:
+#         return {"description": "post amount is decent"}
+#     text = f"Hi! Could you add new post in post list? There are only {len(posts)} posts 😿"
+#     await bot.send_message(chat_id=settings.admin_tg_id, text=text)
+#     return {"description": "admin has been notified"}
