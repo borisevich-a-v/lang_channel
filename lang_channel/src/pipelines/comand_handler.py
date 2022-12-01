@@ -24,7 +24,7 @@ class UserContext:
         ]
 
     async def process_reply(self, update: Update) -> Result:
-        logger.info(f"Process {update.message.id} for {self.tg_user.name}")
+        logger.info(f"Process {update.update_id} for {self.tg_user.name}")
         for pipeline in self.pipelines:
             result = await pipeline.handle_request(update)
             if result is not None:

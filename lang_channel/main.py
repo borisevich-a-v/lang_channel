@@ -14,7 +14,7 @@ bot = LangBot()
 
 @app.on_event("startup")
 async def startup():
-    asyncio.create_task(bot.run_polling())
+    asyncio.create_task(bot.run())
 
 
 @app.get("/")

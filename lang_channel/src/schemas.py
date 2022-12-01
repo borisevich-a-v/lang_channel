@@ -26,6 +26,11 @@ class Post(BaseModel):
 class RawPost(Post):
     ...
 
+    def clear(self):
+        self.text = None
+        self.photo = None
+        self.voice = None
+
 
 class FinishedPost(Post):
     id_: str

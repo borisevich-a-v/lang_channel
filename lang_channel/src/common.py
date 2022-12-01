@@ -20,7 +20,7 @@ class Result(BaseModel):
 
 
 def is_user_allowed(update: Update) -> bool:
-    user_id = str(update.message.from_user.id)
+    user_id = str(update.effective_user.id)
     if user_id not in settings.allowed_users:
         return False
     return True

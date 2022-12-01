@@ -1,5 +1,4 @@
-import asyncio
-from typing import List
+from typing import Dict
 
 from loguru import logger
 from telegram.ext import ApplicationBuilder, MessageHandler, Application, filters
@@ -17,35 +16,29 @@ class LangBot:
     """
 
     def __init__(self):
-        self.user_contexts: List[UserContext] = []
+        self.user_contexts: Dict[int, UserContext] = {}
         self.application: Application = ApplicationBuilder().token(settings.tg_bot_token).build()
         self.message_handler = MessageHandler(filters.ALL, self.process_update)
 
     async def process_update(self, update: Update):
-        msg = update.message
-        logger.info(f"Received message {msg.id} from {msg.from_user.name}:" f" {msg.voice=}, {msg.text=}")
-        user = self.get_or_create_user(update.message.from_user)
+        logger.info(f"Received update from {update.effective_user}: {update}")
+        # Need to refactor users if users amount is huge
+        user = self.get_or_create_user(update.effective_user)
         result = await user.process_reply(update)
         if result.response_message:
-            await user.tg_user.send_message(
-                text=result.response_message,
-                reply_to_message_id=update.message.message_id,
-            )
+            await user.tg_user.send_message(text=result.response_message)
 
     def get_or_create_user(self, tg_user: User) -> UserContext:
-        for user in self.user_contexts:
-            if user.id == tg_user.id:
-                return user
-        new_user = UserContext(tg_user, registry)
-        self.user_contexts.append(new_user)
-        return new_user
+        user = self.user_contexts.get(tg_user.id)
+        if not user:
+            user = UserContext(tg_user, registry)
+            self.user_contexts[user.id] = user
+        return user
 
-    async def run_polling(self):
+    async def run(self):
         updater = self.application.updater
         await updater.initialize()
         q = await updater.start_polling()
         while True:
             update = await q.get()
-            if update and update.message:
-                await self.process_update(update)
-            await asyncio.sleep(0.1)
+            await self.process_update(update)

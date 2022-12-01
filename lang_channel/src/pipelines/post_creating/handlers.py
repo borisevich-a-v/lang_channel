@@ -14,11 +14,11 @@ from telegram import Update, User, InlineKeyboardButton, InlineKeyboardMarkup
 PREVIEWS_DIRECTORY = Path("../previews")
 PREVIEWS_DIRECTORY.mkdir(exist_ok=True)
 
-APPROVE, DISAPPROVE = "да", "нет"
+APPROVE, DISAPPROVE = "approve", "disapprove"
 
 
 class PostHandler(IHandler, ABC):
-    BUTTONS = [[InlineKeyboardButton("👍", callback_data=APPROVE), InlineKeyboardButton("👎", callback_data=DISAPPROVE)]]
+    APPROVE_KEYBOARD = InlineKeyboardMarkup([[InlineKeyboardButton("👍", callback_data=APPROVE), InlineKeyboardButton("👎", callback_data=DISAPPROVE)]])
 
     def __init__(self, user: User, post: RawPost):
         self.user = user
@@ -33,8 +33,8 @@ class PostHandler(IHandler, ABC):
             await self.user.send_message("Record audio for post please.")
         else:
             await self.post.send_to_user(self.user)
-            await self.user.send_message("Great, check post and approve or disapprove post")
-                                         # reply_markup=InlineKeyboardMarkup(self.BUTTONS))
+            await self.user.send_message("Great, check post and approve or disapprove post",
+                                         reply_markup=self.APPROVE_KEYBOARD)
 
 
 class PostTextHandler(PostHandler):
@@ -49,13 +49,13 @@ class PostTextHandler(PostHandler):
 
     @classmethod
     def is_update_processable(cls, update: Update, *args, **kwargs) -> bool:
-        if not cls._is_text_for_post(update):
-            return False
-        return True
+        if update.message and update.message.text and cls._is_text_for_post(update):
+            return True
+        return False
 
     @staticmethod
     def _is_text_for_post(update: Update) -> bool:
-        return update.message.text and len(update.message.text.split("\n")) == 4
+        return len(update.message.text.split("\n")) == 4
 
     def create_and_save_preview(self, text) -> Path:
         preview = get_preview(text)
@@ -93,29 +93,24 @@ class PostTextHandler(PostHandler):
 class PostAudioHandler(PostHandler):
     @classmethod
     def is_update_processable(cls, update: Update, *args, **kwargs) -> bool:
-        if update.message.voice is None:
-            return False
-        return True
+        if update.message and update.message.voice:
+            return True
+        return False
 
     async def execute(self, update: Update):
         try:
-            await self.receive_audio(update)
+            self.post.voice = update.message.voice
             await self.send_message_to_user()
             return Result(success=True)
         except Exception as exp:
             traceback.print_exc()
             return Result(success=False, response_message=str(exp))
 
-    async def receive_audio(self, update: Update):
-        self.post.voice = update.message.voice
-        if not self.post.photo:
-            raise HumanReadableException("Looks like photo of post is not saved. Try again please")
-
 
 class PostApproveAndSaveHandler(PostHandler):
     @classmethod
     def is_update_processable(cls, update: Update, *args, **kwargs) -> bool:  # TODO: dix args
-        if update.message.text in (APPROVE, DISAPPROVE):
+        if update.callback_query and update.callback_query.message.reply_markup == cls.APPROVE_KEYBOARD:
             return True
         return False
 
@@ -128,16 +123,13 @@ class PostApproveAndSaveHandler(PostHandler):
             return Result(success=False, response_message=str(exp))
 
     async def approve_post(self, update: Update) -> Optional[Result]:
-        if update.message.text.lower() == APPROVE:
+        if update.callback_query.data == APPROVE:
             post_to_save = FinishedPost.parse_raw_post(self.post)
             registry.save_post(post_to_save)
-            self.post = RawPost()
+            self.post.clear()
             return Result(
                 success=True,
                 response_message="Great, post was saved in the tail of the queue",
             )
-        elif update.message.text.lower() == DISAPPROVE:
-            return Result(success=False, response_message="You can change text or audio")
         else:
-            await self.send_message_to_user()
-            return Result(success=False)
+            return Result(success=False, response_message="You can change text or audio")
