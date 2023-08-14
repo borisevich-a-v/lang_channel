@@ -12,8 +12,8 @@ class HumanReadableException(Exception):
 
 class Result(BaseModel):
     success: bool = True
-    response_message: Optional[str]
-    post: Optional[RawPost]
+    response_message: Optional[str] = None
+    post: Optional[RawPost] = None
 
     class Config:
         arbitrary_types_allowed = True

@@ -6,9 +6,9 @@ from telegram import PhotoSize, User, Voice
 
 
 class Post(BaseModel):
-    text: Optional[str]
-    photo: Optional[PhotoSize]
-    voice: Optional[Voice]
+    text: Optional[str] = None
+    photo: Optional[PhotoSize] = None
+    voice: Optional[Voice] = None
 
     class Config:
         arbitrary_types_allowed = True

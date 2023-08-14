@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List
 
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 dotenv_path = Path(__file__).parents[1] / ".env"
 
@@ -18,7 +18,7 @@ class Settings(BaseSettings):
         admin_tg_id,
     ]
     admin_tg_id: str = admin_tg_id
-    data_time_format = "%Y/%m/%d, %H:%M:%S"
+    data_time_format: str = "%Y/%m/%d, %H:%M:%S"
 
     class Config:
         env_file = dotenv_path

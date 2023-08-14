@@ -9,8 +9,8 @@ BACKGROUND_PATH = Path(__file__).parent / "background.jpg"
 
 FONT_SIZE = 148
 PADDING_TO_FONT_RATIO = 1 / 8 / 2  # font / 8 / sides_amount
-FONT = ImageFont.truetype(str(FONT_PATH), size=FONT_SIZE, layout_engine=ImageFont.LAYOUT_RAQM)
-FILL = "white"
+FONT = ImageFont.truetype(str(FONT_PATH), size=FONT_SIZE, layout_engine=ImageFont.Layout.RAQM)
+FILL = "#013220" # Dark green
 LANGUAGE = "zh"  # chinese
 BACKGROUND = Image.open(BACKGROUND_PATH)
 PUNCTUATION_MARKS_WITH_WRONG_WIDTH = "，。、"
@@ -44,7 +44,9 @@ def get_multiline_preview(text: str, image: Image, draw: ImageDraw.Draw) -> Imag
 
 
 def get_single_line_preview(text: str, image: Image, draw: ImageDraw.Draw) -> Image:
-    w, h = FONT.getsize(ch_text_substitution(text))
+    text_bbox = FONT.getbbox(ch_text_substitution(text))
+    w = text_bbox[2] - text_bbox[0]
+    h = text_bbox[3] - text_bbox[1]
     x = (image.size[0] - w) / 2
     y = (image.size[1] - h) / 2
     draw.text((x, y), text=text, fill=FILL, font=FONT, language=LANGUAGE)

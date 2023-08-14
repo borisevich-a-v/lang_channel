@@ -1,4 +1,7 @@
-fastapi[all]
+fastapi
+uvicorn
+pydantic
+pydantic-settings
 python-telegram-bot==20.0a2
 Pillow
 gspread
