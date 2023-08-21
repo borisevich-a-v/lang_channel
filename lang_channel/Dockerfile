@@ -3,7 +3,7 @@ FROM python:3.10.5-slim
 ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update
-RUN apt-get install --yes libraqm-dev
+RUN apt-get install --yes libraqm-dev apt-utils
 
 WORKDIR /app
 COPY requirements.txt requirements.txt
