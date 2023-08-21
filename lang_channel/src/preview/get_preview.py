@@ -25,18 +25,25 @@ def ch_text_substitution(string: str) -> str:
     return string
 
 
+def get_text_size(text) -> tuple[int, int]:
+    text_bbox = FONT.getbbox(ch_text_substitution(text))
+    w = text_bbox[2] - text_bbox[0]
+    h = text_bbox[3] - text_bbox[1]
+    return w, h
+
+
 def get_multiline_preview(text: str, image: Image, draw: ImageDraw.Draw) -> Image:
     lines = text.split("\\n")
     h_mid = image.size[1] / 2
 
     first_line = lines[0]
-    w_1, h_1 = FONT.getsize(ch_text_substitution(first_line))
+    w_1, h_1 = get_text_size(first_line)
     x_1 = (image.size[0] - w_1) / 2
     y_1 = h_mid - h_1 * (1 + PADDING_TO_FONT_RATIO)
     draw.text((x_1, y_1), text=first_line, fill=FILL, font=FONT, language=LANGUAGE)
 
     second_line = lines[1]
-    w_2, h_2 = FONT.getsize(ch_text_substitution(second_line))
+    w_2, h_2 = get_text_size(second_line)
     x_2 = (image.size[0] - w_2) / 2
     y_2 = h_mid + PADDING_TO_FONT_RATIO * h_2
     draw.text((x_2, y_2), text=second_line, fill=FILL, font=FONT, language=LANGUAGE)
@@ -44,9 +51,7 @@ def get_multiline_preview(text: str, image: Image, draw: ImageDraw.Draw) -> Imag
 
 
 def get_single_line_preview(text: str, image: Image, draw: ImageDraw.Draw) -> Image:
-    text_bbox = FONT.getbbox(ch_text_substitution(text))
-    w = text_bbox[2] - text_bbox[0]
-    h = text_bbox[3] - text_bbox[1]
+    w, h = get_text_size(text)
     x = (image.size[0] - w) / 2
     y = (image.size[1] - h) / 2
     draw.text((x, y), text=text, fill=FILL, font=FONT, language=LANGUAGE)
