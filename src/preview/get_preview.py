@@ -2,7 +2,8 @@ from copy import deepcopy
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
-from src.common import HumanReadableException
+
+from common import HumanReadableException
 
 FONT_PATH = Path(__file__).parent / "chinese.stzhongs.ttf"
 BACKGROUND_PATH = Path(__file__).parent / "background.jpg"
@@ -10,7 +11,7 @@ BACKGROUND_PATH = Path(__file__).parent / "background.jpg"
 FONT_SIZE = 148
 PADDING_TO_FONT_RATIO = 1 / 8 / 2  # font / 8 / sides_amount
 FONT = ImageFont.truetype(str(FONT_PATH), size=FONT_SIZE, layout_engine=ImageFont.Layout.RAQM)
-FILL = "#013220" # Dark green
+FILL = "#013220"  # Dark green
 LANGUAGE = "zh"  # chinese
 BACKGROUND = Image.open(BACKGROUND_PATH)
 PUNCTUATION_MARKS_WITH_WRONG_WIDTH = "，。、"

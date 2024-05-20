@@ -3,13 +3,14 @@ from abc import ABC
 from pathlib import Path
 from typing import Optional
 
-from src.common import HumanReadableException, Result
-from src.google_sheets import registry
-from src.pipelines.interfaces import IHandler
-from src.preview.get_preview import get_preview
-from src.schemas import FinishedPost, RawPost
-from src.validators.hashtags import validate_hashtags
-from telegram import Update, User, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, User
+
+from common import HumanReadableException, Result
+from google_sheets import registry
+from pipelines import IHandler
+from preview.get_preview import get_preview
+from schemas import FinishedPost, RawPost
+from validators.hashtags import validate_hashtags
 
 PREVIEWS_DIRECTORY = Path("../previews")
 PREVIEWS_DIRECTORY.mkdir(exist_ok=True)
@@ -18,7 +19,9 @@ APPROVE, DISAPPROVE = "approve", "disapprove"
 
 
 class PostHandler(IHandler, ABC):
-    APPROVE_KEYBOARD = InlineKeyboardMarkup([[InlineKeyboardButton("👍", callback_data=APPROVE), InlineKeyboardButton("👎", callback_data=DISAPPROVE)]])
+    APPROVE_KEYBOARD = InlineKeyboardMarkup(
+        [[InlineKeyboardButton("👍", callback_data=APPROVE), InlineKeyboardButton("👎", callback_data=DISAPPROVE)]]
+    )
 
     def __init__(self, user: User, post: RawPost):
         self.user = user
@@ -33,8 +36,9 @@ class PostHandler(IHandler, ABC):
             await self.user.send_message("Record audio for post please.")
         else:
             await self.post.send_to_user(self.user)
-            await self.user.send_message("Great, check post and approve or disapprove post",
-                                         reply_markup=self.APPROVE_KEYBOARD)
+            await self.user.send_message(
+                "Great, check post and approve or disapprove post", reply_markup=self.APPROVE_KEYBOARD
+            )
 
 
 class PostTextHandler(PostHandler):
@@ -109,7 +113,7 @@ class PostAudioHandler(PostHandler):
 
 class PostApproveAndSaveHandler(PostHandler):
     @classmethod
-    def is_update_processable(cls, update: Update, *args, **kwargs) -> bool:  # TODO: dix args
+    def is_update_processable(cls, update: Update, *args, **kwargs) -> bool:  # TODO: fix args
         if update.callback_query and update.callback_query.message.reply_markup == cls.APPROVE_KEYBOARD:
             return True
         return False

@@ -1,13 +1,14 @@
 from typing import Optional
 
 from pydantic import BaseModel
-from src.config import settings
-from src.schemas import RawPost
 from telegram import Update
+
+from config import settings
+from schemas import RawPost
 
 
 class HumanReadableException(Exception):
-    ...
+    pass
 
 
 class Result(BaseModel):

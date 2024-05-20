@@ -5,9 +5,10 @@ from typing import List
 import gspread
 from loguru import logger
 from pydantic import BaseModel
-from src.config import settings
-from src.schemas import FinishedPost
 from telegram import PhotoSize, Voice
+
+from config import settings
+from schemas import FinishedPost
 
 
 class Row(BaseModel):
@@ -78,7 +79,7 @@ class SpreadSheet:
     def get_next_post_and_move_it_to_archive(self) -> FinishedPost:
         post = self.get_next_posts(1)[0]
         self.save_post(post, worksheet=self.archive)
-        self.worksheet.delete_row(1)
+        self.worksheet.delete_rows(1)
         return post
 
 

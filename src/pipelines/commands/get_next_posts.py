@@ -2,15 +2,15 @@ import re
 from re import Pattern
 from typing import Optional
 
-from src.common import is_user_allowed, HumanReadableException
-from src.google_sheets import SpreadSheet
-from src.pipelines.commands.interfaces import ICommand
-from src.pipelines.interfaces import Result
 from telegram import Update, User
+
+from common import HumanReadableException, Result, is_user_allowed
+from google_sheets import SpreadSheet
+from pipelines.commands import ICommand
 
 
 class GetNextPostsCommand(ICommand):
-    COMMAND: Pattern = re.compile(r"\/get_[0-9]{1,2}_next_posts")
+    COMMAND: Pattern = re.compile(r"/get_[0-9]{1,2}_next_posts")
 
     def __init__(self, user: User, post_repository: SpreadSheet):
         self.user = user

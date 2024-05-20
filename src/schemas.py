@@ -24,8 +24,6 @@ class Post(BaseModel):
 
 
 class RawPost(Post):
-    ...
-
     def clear(self):
         self.text = None
         self.photo = None

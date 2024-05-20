@@ -2,10 +2,7 @@ from loguru import logger
 
 
 class ValidationError(Exception):
-    ...
-
-
-forbidden_hashtags = {"#Документ", "#Путешествия"}
+    pass
 
 
 def validate_hashtags(text: str):
@@ -14,19 +11,18 @@ def validate_hashtags(text: str):
     validate_all_words_starts_with_hash(text)
     validate_hashtag_amount(text)
     validate_case(text)
-    validate_forbidden_hashtags(text)
 
 
 def validate_single_line(text: str):
     if "\n" in text:
-        raise ValidationError("Hashtags has to be one line")
+        raise ValidationError("Hashtags should be on one line")
 
 
 def validate_all_words_starts_with_hash(text: str):
     words = text.split()
     for word in words:
         if not word.startswith("#"):
-            raise ValidationError("All hashtags have to be started with `#`")
+            raise ValidationError(f"All hashtags have to be started with `#`, but you add: {word}")
 
 
 def validate_hashtag_amount(text: str):
@@ -40,9 +36,3 @@ def validate_case(text: str):
         hashtag = hashtag.lstrip("#")
         if hashtag.capitalize() != hashtag:
             raise ValidationError("Hashtag has to be started with capitalize letter")
-
-
-def validate_forbidden_hashtags(text: str):
-    for hashtag in text.split():
-        if hashtag in forbidden_hashtags:
-            raise ValidationError("Hmm, this hashtag is forbidden")

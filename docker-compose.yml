@@ -8,4 +8,3 @@ services:
       - '50051:50051'
     volumes:
       - "./logs.log:/logs.log"
-      - "./:/app"

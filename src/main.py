@@ -1,12 +1,12 @@
 import asyncio
-from random import randint
 from typing import Dict
 
 from fastapi import FastAPI
 from loguru import logger
-from src.google_sheets import registry
-from src.post_post import post_post
-from src.telegram_bot.bot import LangBot
+
+from bot import LangBot
+from config import settings
+from google_sheets import registry
 
 app = FastAPI()
 bot = LangBot()
@@ -26,10 +26,10 @@ async def get_status() -> Dict[str, str]:
 @app.post("/publish_post", responses={200: {"description": "Post posted successfully"}})
 async def publish_post() -> Dict[str, str]:
     logger.info("Request on endpoint `publish_post`")
-    magic_number_min, magic_number_max = 10, 3 * 60
-    time_to_sleep = randint(magic_number_min, magic_number_max)
-    await asyncio.sleep(time_to_sleep)
-    await post_post(bot, registry)
+    post = registry.get_next_post_and_move_it_to_archive()
+    logger.info(f"Post {post.id_} was downloaded")
+    await bot.application.bot.send_photo(chat_id=settings.channel_name, photo=post.photo, caption=post.text)
+    await bot.application.bot.send_voice(chat_id=settings.channel_name, voice=post.voice)
     return {"description": "Post posted successfully"}
 
 

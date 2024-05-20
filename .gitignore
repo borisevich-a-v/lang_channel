@@ -3,13 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Jupyter Notebook
-.ipynb_checkpoints
-
 # Environments
-**/.env
+.env
 venv/
-**/service_account.json
+service_account.json
 
 # mypy
 .mypy_cache/
