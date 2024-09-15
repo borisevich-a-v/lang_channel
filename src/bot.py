@@ -1,45 +1,63 @@
 import asyncio
-from typing import Dict
+from typing import Dict, NoReturn
 
 from loguru import logger
-from telegram import Update, User
-from telegram.ext import Application, ApplicationBuilder, MessageHandler, filters
+from telegram import Bot, Update, User
+from telegram.error import Forbidden, NetworkError
 
-from config import settings
 from google_sheets import registry
 from pipelines.comand_handler import UserContext
 
 
-class LangBot:
-    """
-    Just wrapper to support legacy code (from 2019)
-    It was designed for a few users
-    """
-
+class UserContextManager:
     def __init__(self):
         self._user_contexts: Dict[int, UserContext] = {}
-        self.application: Application = ApplicationBuilder().token(settings.tg_bot_token).build()
-        self.message_handler = MessageHandler(filters.ALL, self.process_update)
 
-    async def process_update(self, update: Update):
-        logger.info(f"Received update from {update.effective_user}: {update}")
-        user = self.get_or_create_user(update.effective_user)
-        result = await user.process_reply(update)
-        if result.response_message:
-            await user.tg_user.send_message(text=result.response_message)
-
-    def get_or_create_user(self, tg_user: User) -> UserContext:
+    def get_user(self, tg_user: User) -> UserContext:
         user = self._user_contexts.get(tg_user.id)
-        if not user:
+        if user is None:
             user = UserContext(tg_user, registry)
             self._user_contexts[user.id] = user
         return user
 
-    async def run(self):
-        updater = self.application.updater
-        await updater.initialize()
-        q = await updater.start_polling()
-        while True:
-            update = await q.get()
-            await self.process_update(update)
-            await asyncio.sleep(0.07)
+
+class LangBot:
+    """
+    Just wrapper to support legacy code (from 2019).
+    And this wrapper was created in 2022. I changed the framework again in 2024, so even this wrapper is ugly (-_-)
+    """
+
+    def __init__(self):
+        self.user_context_manager = UserContextManager()
+
+    async def process_updates(self, bot, update_id: int):
+        updates = await bot.get_updates(offset=update_id, timeout=10, allowed_updates=Update.ALL_TYPES)
+        for update in updates:
+            next_update_id = update.update_id + 1
+            if update.message and update.message.text:
+                logger.info("Found message %s", update.message.text)
+                user = self.user_context_manager.get_user(update.effective_user)
+                result = await user.process_reply(update)
+                if result.response_message:
+                    await user.tg_user.send_message(text=result.response_message)
+
+            return next_update_id
+        return update_id
+
+    async def run(self) -> NoReturn:
+        async with Bot("TOKEN") as bot:
+            try:
+                update_id = (await bot.get_updates())[0].update_id
+            except IndexError:
+                update_id = None
+
+            logger.info("listening for new messages...")
+            while True:
+                try:
+                    update_id = await self.process_updates(bot, update_id)
+                except NetworkError:
+                    logger.error("Network error...")
+                    await asyncio.sleep(1)
+                except Forbidden:
+                    logger.error("The user has blocked the bot.")
+                    update_id += 1
