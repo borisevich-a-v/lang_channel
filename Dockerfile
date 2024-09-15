@@ -1,7 +1,5 @@
 FROM python:3.11
 
-ENV PYTHONUNBUFFERED=1
-
 RUN apt-get update
 RUN apt-get install --yes libraqm-dev apt-utils
 
