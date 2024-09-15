@@ -17,7 +17,7 @@ repos:
           - --line-length=120
 
   - repo: https://github.com/psf/black
-    rev: 24.4.2
+    rev: 24.8.0
     hooks:
       - id: black
         language_version: python3
@@ -25,13 +25,13 @@ repos:
           - --line-length=120
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.10.0
+    rev: v1.11.2
     hooks:
       - id: mypy
         exclude: tests/
 
   - repo: https://github.com/pycqa/pylint
-    rev: v3.2.1
+    rev: v3.2.7
     hooks:
       - id: pylint
         types: [ python ]

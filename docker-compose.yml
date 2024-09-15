@@ -6,5 +6,3 @@ services:
     restart: on-failure
     ports:
       - '50051:50051'
-    volumes:
-      - "./logs.log:/logs.log"
