@@ -5,8 +5,8 @@ from loguru import logger
 from telegram import Bot, Update, User
 from telegram.error import Forbidden, NetworkError
 
-from google_sheets import registry
-from pipelines.comand_handler import UserContext
+from lang_channel.google_sheets import registry
+from lang_channel.pipelines.comand_handler import UserContext
 
 
 class UserContextManager:
@@ -45,7 +45,9 @@ class LangBot:
         return update_id
 
     async def run(self) -> NoReturn:
+        logger.info("inside the run")
         async with Bot("TOKEN") as bot:
+            logger.info("inside the bot")
             try:
                 update_id = (await bot.get_updates())[0].update_id
             except IndexError:

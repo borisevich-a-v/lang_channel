@@ -3,8 +3,8 @@ from typing import Optional
 from pydantic import BaseModel
 from telegram import Update
 
-from config import settings
-from schemas import RawPost
+from lang_channel.config import settings
+from lang_channel.schemas import RawPost
 
 
 class HumanReadableException(Exception):

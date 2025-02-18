@@ -1,7 +1,7 @@
 from abc import ABC
 from re import Pattern
 
-from pipelines import IPipeline
+from lang_channel.pipelines import IPipeline
 
 
 class ICommand(IPipeline, ABC):

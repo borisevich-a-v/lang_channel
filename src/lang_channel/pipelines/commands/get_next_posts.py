@@ -4,9 +4,9 @@ from typing import Optional
 
 from telegram import Update, User
 
-from common import HumanReadableException, Result, is_user_allowed
-from google_sheets import SpreadSheet
-from pipelines.commands import ICommand
+from lang_channel.common import HumanReadableException, Result, is_user_allowed
+from lang_channel.google_sheets import SpreadSheet
+from lang_channel.pipelines.commands import ICommand
 
 
 class GetNextPostsCommand(ICommand):

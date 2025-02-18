@@ -2,8 +2,8 @@ from typing import Optional
 
 from telegram import Update, User
 
-from common import Result, is_user_allowed
-from pipelines.commands import ICommand
+from lang_channel.common import Result, is_user_allowed
+from lang_channel.pipelines.commands import ICommand
 
 
 class CreatePostCommand(ICommand):

@@ -7,8 +7,8 @@ from loguru import logger
 from pydantic import BaseModel
 from telegram import PhotoSize, Voice
 
-from config import settings
-from schemas import FinishedPost
+from lang_channel.config import settings
+from lang_channel.schemas import FinishedPost
 
 
 class Row(BaseModel):
@@ -66,14 +66,18 @@ class SpreadSheet:
         values = self.worksheet.get_values(f"A1:Z{amount}")
         posts = []
         for row in values:
-            id_ = row[0]
-            text = row[1]
-            photo_dict = json.loads(row[2])
-            photo = PhotoSize(**photo_dict)
-            voice_dict = json.loads(row[3])
-            voice = Voice(**voice_dict)
-            post = FinishedPost(id_=id_, text=text, photo=photo, voice=voice)
-            posts.append(post)
+            try:
+                id_ = row[0]
+                text = row[1]
+                photo_dict = json.loads(row[2])
+                photo = PhotoSize(**photo_dict)
+                voice_dict = json.loads(row[3])
+                voice = Voice(**voice_dict)
+                post = FinishedPost(id_=id_, text=text, photo=photo, voice=voice)
+                posts.append(post)
+            except IndexError:
+                logger.info("Strange values from sheets: {}", values)
+                pass
         return posts
 
     def get_next_post_and_move_it_to_archive(self) -> FinishedPost:

@@ -3,12 +3,12 @@ from typing import List
 from loguru import logger
 from telegram import Update, User
 
-from common import Result
-from google_sheets import registry
-from pipelines import IPipeline
-from pipelines.commands.create_post_instruction import CreatePostCommand
-from pipelines.commands.get_next_posts import GetNextPostsCommand
-from pipelines.post_creating.pipeline import PostAddingPipeline
+from lang_channel.common import Result
+from lang_channel.google_sheets import registry
+from lang_channel.pipelines import IPipeline
+from lang_channel.pipelines.commands.create_post_instruction import CreatePostCommand
+from lang_channel.pipelines.commands.get_next_posts import GetNextPostsCommand
+from lang_channel.pipelines.post_creating.pipeline import PostAddingPipeline
 
 
 class UserContext:

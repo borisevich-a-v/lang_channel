@@ -3,7 +3,7 @@ from typing import Optional
 
 from telegram import Update
 
-from common import Result
+from lang_channel.common import Result
 
 
 class IHandler(ABC):

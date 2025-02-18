@@ -3,7 +3,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-from common import HumanReadableException
+from lang_channel.common import HumanReadableException
 
 FONT_PATH = Path(__file__).parent / "chinese.stzhongs.ttf"
 BACKGROUND_PATH = Path(__file__).parent / "background.jpg"

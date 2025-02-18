@@ -2,10 +2,10 @@ from typing import Optional
 
 from telegram import Update, User
 
-from common import Result, is_user_allowed
-from pipelines import IPipeline
-from pipelines.post_creating.handlers import PostApproveAndSaveHandler, PostAudioHandler, PostTextHandler
-from schemas import RawPost
+from lang_channel.common import Result, is_user_allowed
+from lang_channel.pipelines import IPipeline
+from lang_channel.pipelines.post_creating.handlers import PostApproveAndSaveHandler, PostAudioHandler, PostTextHandler
+from lang_channel.schemas import RawPost
 
 
 class PostAddingPipeline(IPipeline):

@@ -5,12 +5,12 @@ from typing import Optional
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, User
 
-from common import HumanReadableException, Result
-from google_sheets import registry
-from pipelines import IHandler
-from preview.get_preview import get_preview
-from schemas import FinishedPost, RawPost
-from validators.hashtags import validate_hashtags
+from lang_channel.common import HumanReadableException, Result
+from lang_channel.google_sheets import registry
+from lang_channel.pipelines import IHandler
+from lang_channel.preview.get_preview import get_preview
+from lang_channel.schemas import FinishedPost, RawPost
+from lang_channel.validators.hashtags import validate_hashtags
 
 PREVIEWS_DIRECTORY = Path("../previews")
 PREVIEWS_DIRECTORY.mkdir(exist_ok=True)
