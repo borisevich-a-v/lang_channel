@@ -1,29 +1,26 @@
-import asyncio
-from typing import Dict
+from typing import Callable
 
 from loguru import logger
+from telegram.ext import ApplicationBuilder, CommandHandler
 
-import config
-from lang_channel.bot import LangBot
-from lang_channel.google_sheets import registry
+from lang_channel import config, handlers
+
+COMMAND_HANDLERS: dict[str, Callable] = {
+    "start": handlers.start,
+    "help": handlers.help_,
+}
 
 
-async def publish_post() -> Dict[str, str]:
-    logger.info("Request on endpoint `publish_post`")
-    post = registry.get_next_post_and_move_it_to_archive()
-    logger.info(f"Post {post.id_} was downloaded")
-    await bot.application.bot.send_photo(chat_id=config.CHANNEL_NAME, photo=post.photo, caption=post.text)
-    await bot.application.bot.send_voice(chat_id=config.CHANNEL_NAME, voice=post.voice)
-    return {"description": "Post posted successfully"}
+def main():
+    logger.info("Starting application...")
+    application = ApplicationBuilder().token(config.TG_BOT_TOKEN).build()
+
+    for command_name, command_handler in COMMAND_HANDLERS.items():
+        application.add_handler(CommandHandler(command_name, command_handler))
+
+    logger.info("Starting polling...")
+    application.run_polling()
 
 
 if __name__ == "__main__":
-    logger.info("Starting application...")
-
-    event_loop = asyncio.new_event_loop()
-
-    bot = LangBot()
-    bot_task = event_loop.create_task(bot.run())
-
-    logger.info("The infinite loop is running")
-    event_loop.run_forever()
+    main()

@@ -32,8 +32,3 @@ repos:
         args:
           - --errors-only
           - --disable=import-error
-
-  - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.394
-    hooks:
-      - id: pyright
