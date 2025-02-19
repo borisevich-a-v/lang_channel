@@ -7,7 +7,7 @@ from loguru import logger
 from pydantic import BaseModel
 from telegram import PhotoSize, Voice
 
-from lang_channel.config import settings
+import config
 from lang_channel.schemas import FinishedPost
 
 
@@ -26,7 +26,7 @@ class SpreadSheet:
 
     def __init__(self) -> None:
         self.gc = gspread.service_account()
-        self.spreadsheet = self.gc.open(settings.spreadsheet_name)
+        self.spreadsheet = self.gc.open(config.SPREADSHEET_NAME)
         self.worksheet = self.spreadsheet.worksheet("posts")
         self.metadata = self.spreadsheet.worksheet("metadata")
         self.archive = self.spreadsheet.worksheet("archive")

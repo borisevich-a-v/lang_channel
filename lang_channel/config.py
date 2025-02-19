@@ -1,28 +1,14 @@
-from pathlib import Path
-from typing import List
+import os
+from dotenv import load_dotenv
 
-from pydantic_settings import BaseSettings
+load_dotenv()
 
-dotenv_path = Path(__file__).parents[2] / ".env"
+DEVELOPER_TG_ID = "240856036"  # my telegram
+ADMIN_TG_ID = "1292759426"
 
-developer_tg_id = "240856036"  # my telegram
-admin_tg_id = "1292759426"
+ALLOWED_USERS = (DEVELOPER_TG_ID, ADMIN_TG_ID)
+TG_BOT_TOKEN = os.getenv('tg_bot_token')
+CHANNEL_NAME = os.getenv('channel_name')
+SPREADSHEET_NAME = os.getenv('spreadsheet_name', "post_list")
 
-
-class Settings(BaseSettings):
-    tg_bot_token: str
-    channel_name: str
-    spreadsheet_name: str = "post_list"
-    allowed_users: List[str] = (
-        developer_tg_id,
-        admin_tg_id,
-    )
-    admin_tg_id: str = admin_tg_id
-    data_time_format: str = "%Y/%m/%d, %H:%M:%S"
-
-    class Config:
-        env_file = dotenv_path
-        env_file_encoding = "utf-8"
-
-
-settings = Settings()
+DATE_TIME_FORMAT = os.getenv('date_time_format', "%Y/%m/%d, %H:%M:%S")

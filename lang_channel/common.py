@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel
 from telegram import Update
 
-from lang_channel.config import settings
+import config
 from lang_channel.schemas import RawPost
 
 
@@ -22,6 +22,6 @@ class Result(BaseModel):
 
 def is_user_allowed(update: Update) -> bool:
     user_id = str(update.effective_user.id)
-    if user_id not in settings.allowed_users:
+    if user_id not in config.ALLOWED_USERS:
         return False
     return True

@@ -18,6 +18,7 @@ pillow = "==11.1.0"
 pydantic = "==2.10.6"
 python-telegram-bot = "==21.10"
 python-crontab = "==3.2.0"
+python-dotenv = "^1.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
