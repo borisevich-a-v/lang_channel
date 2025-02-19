@@ -1,22 +1,21 @@
 from typing import Callable
 
 from loguru import logger
-from telegram.ext import ApplicationBuilder, CommandHandler
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
 
 from lang_channel import config, handlers
-
-COMMAND_HANDLERS: dict[str, Callable] = {
-    "start": handlers.start,
-    "help": handlers.help_,
-}
+from lang_channel.handlers.get_next_posts import GET_NEXT_POSTS_PATTERN, get_next_posts
 
 
 def main():
     logger.info("Starting application...")
+
     application = ApplicationBuilder().token(config.TG_BOT_TOKEN).build()
 
-    for command_name, command_handler in COMMAND_HANDLERS.items():
-        application.add_handler(CommandHandler(command_name, command_handler))
+    application.add_handler(CommandHandler("start", handlers.start))
+    application.add_handler(CommandHandler("help", handlers.help_))
+
+    application.add_handler(MessageHandler(filters.Regex(GET_NEXT_POSTS_PATTERN), get_next_posts))
 
     logger.info("Starting polling...")
     application.run_polling()
