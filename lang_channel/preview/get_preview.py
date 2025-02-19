@@ -3,8 +3,6 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-from lang_channel.common import HumanReadableException
-
 FONT_PATH = Path(__file__).parent / "chinese.stzhongs.ttf"
 BACKGROUND_PATH = Path(__file__).parent / "background.jpg"
 
@@ -26,7 +24,7 @@ def ch_text_substitution(string: str) -> str:
     return string
 
 
-def get_text_size(text) -> tuple[int, int]:
+def get_text_size(text) -> tuple[float, float]:
     text_bbox = FONT.getbbox(ch_text_substitution(text))
     w = text_bbox[2] - text_bbox[0]
     h = text_bbox[3] - text_bbox[1]
@@ -61,7 +59,7 @@ def get_single_line_preview(text: str, image: Image, draw: ImageDraw.Draw) -> Im
 
 def get_preview(text: str) -> Image:
     if len(text.split("\\n")) > 2:
-        raise HumanReadableException("Text has to contain two lines or fewer")
+        raise Exception("Text has to contain two lines or fewer")
 
     image = deepcopy(BACKGROUND)
     draw = ImageDraw.Draw(image)
