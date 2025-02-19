@@ -24,12 +24,6 @@ repos:
         args:
           - --line-length=120
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.2
-    hooks:
-      - id: mypy
-        exclude: tests/
-
   - repo: https://github.com/pycqa/pylint
     rev: v3.2.7
     hooks:
@@ -38,3 +32,8 @@ repos:
         args:
           - --errors-only
           - --disable=import-error
+
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.394
+    hooks:
+      - id: pyright

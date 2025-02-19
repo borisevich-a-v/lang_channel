@@ -5,24 +5,26 @@ description = ""
 authors = ["Andrei Borisevich <andreyborisevichleti@gmail.com>"]
 readme = "README.md"
 packages = [
-    { include = "lang_channel", from = "src" },
+    { include = "lang_channel"},
   ]
 
+
 [tool.poetry.dependencies]
-python = "^3.12"
-gspread = "^6.1.4"
-loguru = "^0.7.3"
-pillow = "^11.1.0"
-pydantic = "^2.10.6"
-pydantic-settings = "^2.7.1"
-python-telegram-bot = "^21.10"
-python-crontab = "^3.2.0"
-poetry-core = "^2.1.1"
+python = "~=3.12.2"
+
+gspread = "==6.1.4"
+loguru = "==0.7.3"
+pillow = "==11.1.0"
+pydantic = "==2.10.6"
+python-telegram-bot = "==21.10"
+python-crontab = "==3.2.0"
 
 
 [tool.poetry.group.dev.dependencies]
+poetry-core = "^2.1.1"
 pytest = "^8.3.4"
 pre-commit = "^4.1.0"
+pylint = "^3.3.4"
 
 [build-system]
 requires = ["poetry-core"]
