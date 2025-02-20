@@ -3,6 +3,10 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
+
+class PreviewError(Exception): ...
+
+
 FONT_PATH = Path(__file__).parent / "chinese.stzhongs.ttf"
 BACKGROUND_PATH = Path(__file__).parent / "background.jpg"
 
@@ -59,7 +63,7 @@ def get_single_line_preview(text: str, image: Image, draw: ImageDraw.Draw) -> Im
 
 def get_preview(text: str) -> Image:
     if len(text.split("\\n")) > 2:
-        raise Exception("Text has to contain two lines or fewer")
+        raise PreviewError("Text has to contain two lines or fewer")
 
     image = deepcopy(BACKGROUND)
     draw = ImageDraw.Draw(image)

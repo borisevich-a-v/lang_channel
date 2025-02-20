@@ -10,7 +10,7 @@ ALLOWED_USERS = (DEVELOPER_TG_ID, ADMIN_TG_ID)
 
 TG_BOT_TOKEN = os.getenv("tg_bot_token")
 
-CHANNEL_NAME = os.getenv("channel_name")
+CHANNEL_ID = os.getenv("channel_name")
 
 SPREADSHEET_NAME = os.getenv("spreadsheet_name", "post_list")
 NEW_POSTS_TABLE_NAME = "posts"

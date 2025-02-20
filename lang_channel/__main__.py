@@ -1,10 +1,16 @@
-from typing import Callable
-
 from loguru import logger
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
+from telegram.ext import ApplicationBuilder
 
 from lang_channel import config, handlers
-from lang_channel.handlers.get_next_posts import GET_NEXT_POSTS_PATTERN, get_next_posts
+
+HANDLERS = (
+    handlers.HELP_COMMAND,
+    handlers.CREATE_POST_COMMAND,
+    handlers.GET_NEXT_POSTS_REQUEST,
+    handlers.POST_CREATE_CONVERSATION,
+    handlers.PUBLISH_COMMAND,
+    handlers.UNKNOWN_REQUEST,
+)
 
 
 def main():
@@ -12,10 +18,9 @@ def main():
 
     application = ApplicationBuilder().token(config.TG_BOT_TOKEN).build()
 
-    application.add_handler(CommandHandler("start", handlers.start))
-    application.add_handler(CommandHandler("help", handlers.help_))
-
-    application.add_handler(MessageHandler(filters.Regex(GET_NEXT_POSTS_PATTERN), get_next_posts))
+    logger.info("Registering handlers...")
+    for h in HANDLERS:
+        application.add_handler(h)
 
     logger.info("Starting polling...")
     application.run_polling()

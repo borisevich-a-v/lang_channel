@@ -42,7 +42,7 @@ class SpreadSheet:
                 "file_unique_id": post.voice.file_unique_id,
             }
         )
-        row_to_add = [post.id_, post.text, photo, voice]
+        row_to_add = [post.id_, post.text, photo, voice, post.publish_count]
         response = worksheet.append_row(row_to_add, include_values_in_response=True)
         if not response:
             raise ValueError("The post was not saved")

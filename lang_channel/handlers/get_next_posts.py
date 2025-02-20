@@ -10,7 +10,7 @@ from lang_channel.storage.google_sheets import registry
 GET_NEXT_POSTS_PATTERN = re.compile(r"/get_[0-9]{1,5}_next_posts")
 
 
-def get_post_amount_from_command(command) -> int:
+def parse_post_amount(command) -> int:
     amount = int(command.lstrip("/get_").rstrip("_next_posts"))
     if amount < 1:
         amount = 1
@@ -20,9 +20,9 @@ def get_post_amount_from_command(command) -> int:
     return amount
 
 
-async def get_next_posts(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def process_get_next_posts(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logger.info("Getting posts for command {}", update.message.text)
-    posts_amount = get_post_amount_from_command(update.message.text)
+    posts_amount = parse_post_amount(update.message.text)
     chat_id = get_chat_id(update)
     posts = registry.get_next_posts(posts_amount)
     if not posts:
