@@ -1,6 +1,7 @@
 FROM python:3.12-slim
 
 RUN apt-get update -y  \
+    && apt-get -y install libraqm-dev \
     && python -m pip install poetry
 
 ENV PYTHONUNBUFFERED=1 \

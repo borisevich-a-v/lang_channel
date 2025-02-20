@@ -1,9 +1,12 @@
 from copy import deepcopy
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageFont
+from PIL.ImageDraw import Draw, ImageDraw
 
-from lang_channel.common import HumanReadableException
+
+class PreviewError(Exception): ...
+
 
 FONT_PATH = Path(__file__).parent / "chinese.stzhongs.ttf"
 BACKGROUND_PATH = Path(__file__).parent / "background.jpg"
@@ -26,14 +29,14 @@ def ch_text_substitution(string: str) -> str:
     return string
 
 
-def get_text_size(text) -> tuple[int, int]:
+def get_text_size(text) -> tuple[float, float]:
     text_bbox = FONT.getbbox(ch_text_substitution(text))
     w = text_bbox[2] - text_bbox[0]
     h = text_bbox[3] - text_bbox[1]
     return w, h
 
 
-def get_multiline_preview(text: str, image: Image, draw: ImageDraw.Draw) -> Image:
+def get_multiline_preview(text: str, image: Image.Image, draw: ImageDraw) -> Image.Image:
     lines = text.split("\\n")
     h_mid = image.size[1] / 2
 
@@ -51,7 +54,7 @@ def get_multiline_preview(text: str, image: Image, draw: ImageDraw.Draw) -> Imag
     return image
 
 
-def get_single_line_preview(text: str, image: Image, draw: ImageDraw.Draw) -> Image:
+def get_single_line_preview(text: str, image: Image.Image, draw: ImageDraw) -> Image.Image:
     w, h = get_text_size(text)
     x = (image.size[0] - w) / 2
     y = (image.size[1] - h) / 2
@@ -59,12 +62,12 @@ def get_single_line_preview(text: str, image: Image, draw: ImageDraw.Draw) -> Im
     return image
 
 
-def get_preview(text: str) -> Image:
+def get_preview(text: str) -> Image.Image:
     if len(text.split("\\n")) > 2:
-        raise HumanReadableException("Text has to contain two lines or fewer")
+        raise PreviewError("Text has to contain two lines or fewer")
 
     image = deepcopy(BACKGROUND)
-    draw = ImageDraw.Draw(image)
+    draw = Draw(image)
     if "\\n" in text:
         return get_multiline_preview(text, image, draw)
     else:

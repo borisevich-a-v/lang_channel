@@ -6,7 +6,7 @@ class ValidationError(Exception):
 
 
 def validate_hashtags(text: str):
-    logger.info("Validating hashtags")
+    logger.info("Validating hashtags...")
     validate_single_line(text)
     validate_all_words_starts_with_hash(text)
     validate_hashtag_amount(text)
@@ -15,7 +15,7 @@ def validate_hashtags(text: str):
 
 def validate_single_line(text: str):
     if "\n" in text:
-        raise ValidationError("Hashtags should be on one line")
+        raise ValidationError("Hashtags should be a single line")
 
 
 def validate_all_words_starts_with_hash(text: str):
