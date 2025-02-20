@@ -1,7 +1,8 @@
 from copy import deepcopy
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageFont
+from PIL.ImageDraw import Draw, ImageDraw
 
 
 class PreviewError(Exception): ...
@@ -35,7 +36,7 @@ def get_text_size(text) -> tuple[float, float]:
     return w, h
 
 
-def get_multiline_preview(text: str, image: Image, draw: ImageDraw.Draw) -> Image:
+def get_multiline_preview(text: str, image: Image.Image, draw: ImageDraw) -> Image.Image:
     lines = text.split("\\n")
     h_mid = image.size[1] / 2
 
@@ -53,7 +54,7 @@ def get_multiline_preview(text: str, image: Image, draw: ImageDraw.Draw) -> Imag
     return image
 
 
-def get_single_line_preview(text: str, image: Image, draw: ImageDraw.Draw) -> Image:
+def get_single_line_preview(text: str, image: Image.Image, draw: ImageDraw) -> Image.Image:
     w, h = get_text_size(text)
     x = (image.size[0] - w) / 2
     y = (image.size[1] - h) / 2
@@ -61,12 +62,12 @@ def get_single_line_preview(text: str, image: Image, draw: ImageDraw.Draw) -> Im
     return image
 
 
-def get_preview(text: str) -> Image:
+def get_preview(text: str) -> Image.Image:
     if len(text.split("\\n")) > 2:
         raise PreviewError("Text has to contain two lines or fewer")
 
     image = deepcopy(BACKGROUND)
-    draw = ImageDraw.Draw(image)
+    draw = Draw(image)
     if "\\n" in text:
         return get_multiline_preview(text, image, draw)
     else:

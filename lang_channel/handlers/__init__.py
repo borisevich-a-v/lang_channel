@@ -29,7 +29,7 @@ GET_NEXT_POSTS_REQUEST = MessageHandler(filters.Regex(GET_NEXT_POSTS_PATTERN), p
 
 POST_CREATE_CONVERSATION = ConversationHandler(
     entry_points=[MessageHandler(PostTextFilter(), process_begin_post_creating)],
-    states={
+    states={  # pyright: ignore [reportArgumentType]
         VOICE: [
             CANCEL_COMMAND,
             MessageHandler(filters.VOICE, process_audio),
@@ -41,5 +41,5 @@ POST_CREATE_CONVERSATION = ConversationHandler(
             MessageHandler(None, process_approval_not_provided),
         ],
     },
-    fallbacks=[CANCEL_COMMAND],
+    fallbacks=[CANCEL_COMMAND],  # pyright: ignore [reportArgumentType]
 )

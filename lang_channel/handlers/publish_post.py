@@ -19,7 +19,7 @@ async def process_publish_post(update: Update, context: ContextTypes.DEFAULT_TYP
     await context.bot.send_voice(chat_id=config.CHANNEL_ID, voice=post.voice)
     logger.info(f"Post {post.id_} has been published")
 
-    post.publish_count += 1
+    post.publish_count = int(post.publish_count) + 1
 
     registry.archive_post(post)
     logger.info(f"Post {post.id_} has been archived")

@@ -8,9 +8,9 @@ DEVELOPER_TG_ID = "240856036"  # my telegram
 ADMIN_TG_ID = "1292759426"
 ALLOWED_USERS = (DEVELOPER_TG_ID, ADMIN_TG_ID)
 
-TG_BOT_TOKEN = os.getenv("tg_bot_token")
+TG_BOT_TOKEN: str = os.environ["tg_bot_token"]
 
-CHANNEL_ID = os.getenv("channel_name")
+CHANNEL_ID: str = os.environ["channel_id"]
 
 SPREADSHEET_NAME = os.getenv("spreadsheet_name", "post_list")
 NEW_POSTS_TABLE_NAME = "posts"

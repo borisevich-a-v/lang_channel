@@ -25,6 +25,8 @@ poetry-core = "^2.1.1"
 pytest = "^8.3.4"
 pre-commit = "^4.1.0"
 pylint = "^3.3.4"
+pyright = "^1.1.394"
+black = "^25.1.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -32,3 +34,14 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pyright]
 reportUnnecessaryTypeIgnoreComment="warning"
+reportOptionalMemberAccess=false
+
+[tool.black]
+line-length = 120
+
+[tool.pylint]
+errors-only=true
+disable=[
+    "import-error"
+]
+max-line-length = 120

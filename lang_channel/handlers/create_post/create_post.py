@@ -77,6 +77,11 @@ async def process_audio(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
 
     post.voice = update.message.voice
 
+    if not post.voice or not post.photo:
+        await context.bot.send_message(get_chat_id(update), "there is some problem, post creation was canceled")
+        await process_cancel(update, context)
+        return ConversationHandler.END
+
     await context.bot.send_photo(get_chat_id(update), post.photo, post.text)
     await context.bot.send_voice(get_chat_id(update), post.voice)
 
@@ -107,7 +112,7 @@ async def process_approval(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     logger.info(f"Post was {update.message.text}. Processing...")
     if update.message.text == APPROVED:
         user = get_chat_id(update)
-        registry.save_new_post(user_to_post_map[user])
+        registry.save_new_post(user_to_post_map[user].cook_post())
         await update.message.reply_text("Пост сохранён.")
         user_to_post_map.pop(user)
     elif update.message.text == DISAPPROVED:

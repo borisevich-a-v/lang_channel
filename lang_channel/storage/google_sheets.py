@@ -1,29 +1,30 @@
 import json
 from typing import List
 
-import gspread
-from gspread import Worksheet
+from gspread.auth import service_account
+from gspread.worksheet import Worksheet
 from loguru import logger
 from telegram import PhotoSize, Voice
 
 from lang_channel import config
-from lang_channel.models import Post
+from lang_channel.models import CookedPost
 
 
 class SpreadSheet:
     # No transactions is a problem. Consider to use some serverless solutions or maybe some libs for spreadsheets.
     def __init__(self) -> None:
         logger.info("Setting up worksheets...")
-        self.spreadsheet = gspread.service_account().open(config.SPREADSHEET_NAME)
+        self.spreadsheet = service_account().open(config.SPREADSHEET_NAME)
 
         self.new_posts_ws = self.spreadsheet.worksheet(config.NEW_POSTS_TABLE_NAME)
         self.archive_ws = self.spreadsheet.worksheet(config.ARCHIVE_TABLE_NAME)
 
-    def save_new_post(self, post: Post) -> None:
+    def save_new_post(self, post: CookedPost) -> None:
         self._save_post(post, self.new_posts_ws)
 
-    def _save_post(self, post: Post, worksheet: Worksheet) -> None:
+    def _save_post(self, post: CookedPost, worksheet: Worksheet) -> None:
         logger.info(f"Saving post {post.id_}")
+
         photo = json.dumps(
             {
                 "file_id": post.photo.file_id,
@@ -48,7 +49,7 @@ class SpreadSheet:
             raise ValueError("The post was not saved")
         logger.info(f"Post {post.id_} was saved")
 
-    def archive_post(self, control_post: Post) -> Post:
+    def archive_post(self, control_post: CookedPost) -> CookedPost:
         """Only the first post can be archived. `control_post` is required for validation purposes only"""
         post = self.get_next_posts(1)[0]
         if post.id_ != control_post.id_:
@@ -58,7 +59,7 @@ class SpreadSheet:
         self.new_posts_ws.delete_rows(1)
         return post
 
-    def get_next_posts(self, amount: int) -> List[Post]:
+    def get_next_posts(self, amount: int) -> List[CookedPost]:
         logger.info(f"Get {amount} posts")
         values = self.new_posts_ws.get_values(f"A1:Z{amount}")
         posts = []
@@ -77,7 +78,7 @@ class SpreadSheet:
 
             publish_count = row[4]
 
-            post = Post(id_=id_, text=text, photo=photo, voice=voice, publish_count=publish_count)
+            post = CookedPost(id_=id_, text=text, photo=photo, voice=voice, publish_count=publish_count)
             posts.append(post)
 
         return posts
