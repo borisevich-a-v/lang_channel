@@ -1,5 +1,5 @@
 import json
-from typing import List
+from typing import Any, List, MutableMapping
 
 from gspread.auth import service_account
 from gspread.worksheet import Worksheet
@@ -8,6 +8,9 @@ from telegram import PhotoSize, Voice
 
 from lang_channel import config
 from lang_channel.models import CookedPost
+
+
+class PostNotSaved(Exception): ...
 
 
 class SpreadSheet:
@@ -45,9 +48,17 @@ class SpreadSheet:
         )
         row_to_add = [post.id_, post.text, photo, voice, post.publish_count]
         response = worksheet.append_row(row_to_add, include_values_in_response=True)
-        if not response:
-            raise ValueError("The post was not saved")
+        self._validate_response(response, row_to_add)
+
         logger.info(f"Post {post.id_} was saved")
+
+    def _validate_response(self, response: MutableMapping[str, Any], added_row: list) -> None:
+        try:
+            updated_row_id = response["updates"]["updatedData"]["values"][0][0]
+        except (IndexError, KeyError):
+            raise PostNotSaved("Post was not saved, or was saved incorrectly. Please manually check changes ")
+        if updated_row_id != added_row[0]:
+            raise PostNotSaved("Post was not saved, or was saved incorrectly. Please manually check changes ")
 
     def archive_post(self, control_post: CookedPost) -> CookedPost:
         """Only the first post can be archived. `control_post` is required for validation purposes only"""
