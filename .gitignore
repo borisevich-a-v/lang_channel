@@ -5,6 +5,3 @@ __pycache__/
 venv/
 service_account.json
 .idea/
-
-# Custom
-/deploy.sh
