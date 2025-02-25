@@ -10,13 +10,12 @@ packages = [
 
 
 [tool.poetry.dependencies]
-python = "~=3.12.2"
+python = "~=3.13.2"
 
 gspread = "==6.1.4"
 loguru = "==0.7.3"
 pillow = "==11.1.0"
 python-telegram-bot = "==21.10"
-python-crontab = "==3.2.0"
 python-dotenv = "^1.0.1"
 
 
