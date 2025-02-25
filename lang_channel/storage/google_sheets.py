@@ -66,7 +66,7 @@ class SpreadSheet:
         if post.id_ != control_post.id_:
             raise ValueError("Only the first post in the table can be archived!")
 
-        self._save_post(post, worksheet=self.archive_ws)
+        self._save_post(control_post, worksheet=self.archive_ws)
         self.new_posts_ws.delete_rows(1)
         return post
 
@@ -89,10 +89,16 @@ class SpreadSheet:
 
             publish_count = row[4]
 
-            post = CookedPost(id_=id_, text=text, photo=photo, voice=voice, publish_count=publish_count)
+            post = CookedPost(id_=id_, text=text, photo=photo, voice=voice, publish_count=int(publish_count))
             posts.append(post)
 
         return posts
+
+    def get_next_post(self) -> CookedPost | None:
+        try:
+            return self.get_next_posts(1)[0]
+        except IndexError:
+            return None
 
 
 registry = SpreadSheet()

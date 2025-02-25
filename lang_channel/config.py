@@ -1,3 +1,4 @@
+import datetime
 import os
 
 from dotenv import load_dotenv
@@ -16,4 +17,4 @@ SPREADSHEET_NAME = os.getenv("spreadsheet_name", "post_list")
 NEW_POSTS_TABLE_NAME = "posts"
 ARCHIVE_TABLE_NAME = "archive"
 
-DATE_TIME_FORMAT = os.getenv("date_time_format", "%Y/%m/%d, %H:%M:%S")
+POST_PUBLISHING_TIME = datetime.time(hour=8, minute=0, tzinfo=datetime.timezone(datetime.timedelta(hours=3)))
