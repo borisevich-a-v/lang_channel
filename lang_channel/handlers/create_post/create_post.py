@@ -11,7 +11,7 @@ from lang_channel.handlers.create_post.validators import ValidationError, valida
 from lang_channel.helpers.get_chat_id import get_chat_id
 from lang_channel.models import Post
 from lang_channel.preview.get_preview import PreviewError, get_preview
-from lang_channel.storage.google_sheets import registry
+from lang_channel.storage.google_sheets import PostNotSaved, registry
 
 VOICE, APPROVE = range(2)
 
@@ -112,7 +112,11 @@ async def process_approval(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     logger.info(f"Post was {update.message.text}. Processing...")
     if update.message.text == APPROVED:
         user = get_chat_id(update)
-        registry.save_new_post(user_to_post_map[user].cook_post())
+        try:
+            registry.save_new_post(user_to_post_map[user].cook_post())
+        except PostNotSaved as exp:
+            await update.message.reply_text(str(exp))
+            return ConversationHandler.END
         await update.message.reply_text("Пост сохранён.")
         user_to_post_map.pop(user)
     elif update.message.text == DISAPPROVED:
