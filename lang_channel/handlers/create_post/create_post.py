@@ -4,7 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from loguru import logger
-from telegram import Message, ReplyKeyboardMarkup, Update
+from telegram import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import ContextTypes, ConversationHandler
 from telegram.ext.filters import MessageFilter
 
@@ -54,9 +54,8 @@ async def process_begin_post_creating(update: Update, context: ContextTypes.DEFA
 
     with TemporaryDirectory() as tmpdir:
         try:
-            async with ProcessingMessagePlaceHolder(update):
-                loop = asyncio.get_event_loop()
-                preview_path = await loop.run_in_executor(None, create_and_save_preview, ch_text, Path(tmpdir))
+            loop = asyncio.get_event_loop()
+            preview_path = await loop.run_in_executor(None, create_and_save_preview, ch_text, Path(tmpdir))
         except PreviewError as exp:
             await update.message.reply_text(str(exp))
             return ConversationHandler.END
@@ -130,7 +129,7 @@ async def process_approval(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             await update.message.reply_text(str(exp))
             return ConversationHandler.END
 
-        await update.message.reply_text("Пост сохранён.")
+        await update.message.reply_text("Пост сохранён.", reply_markup=ReplyKeyboardRemove())
         user_to_post_map.pop(user)
     else:
         raise UnexpectedResponse(f"Expected {APPROVED} or {DISAPPROVED}, got {update}")
@@ -142,7 +141,7 @@ async def process_approval_not_provided(update: Update, context: ContextTypes.DE
     logger.info("User sent not an approval...")
     await update.message.reply_text(
         "Вы сейчас находитесь в процессе создания поста.\n"
-        "Пожалуйста воспользуйтесь клавиатурой для того, чтобы подтвердить или отменить сохранение поста\n"
+        f"Пожалуйста отправьте {APPROVED} или {DISAPPROVED}\n"
         "Если вы хотите отменить, то отправьте команду /cancel."
     )
 
@@ -153,6 +152,8 @@ async def process_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     logger.info("Canceling post creation...")
     user = get_chat_id(update)
     user_to_post_map.pop(user)
-    await update.message.reply_text("Создание поста прекращено. Вы можете начать с начала.")
+    await update.message.reply_text(
+        "Создание поста прекращено. Вы можете начать с начала.", reply_markup=ReplyKeyboardRemove()
+    )
 
     return ConversationHandler.END
