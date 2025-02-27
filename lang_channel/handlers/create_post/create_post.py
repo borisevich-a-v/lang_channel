@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -8,7 +9,9 @@ from telegram.ext import ContextTypes, ConversationHandler
 from telegram.ext.filters import MessageFilter
 
 from lang_channel.handlers.create_post.validators import ValidationError, validate_hashtags
+from lang_channel.handlers.errors import UnexpectedResponse
 from lang_channel.helpers.get_chat_id import get_chat_id
+from lang_channel.helpers.processing_placeholder import ProcessingMessagePlaceHolder
 from lang_channel.models import Post
 from lang_channel.preview.get_preview import PreviewError, get_preview
 from lang_channel.storage.google_sheets import PostNotSaved, registry
@@ -51,7 +54,9 @@ async def process_begin_post_creating(update: Update, context: ContextTypes.DEFA
 
     with TemporaryDirectory() as tmpdir:
         try:
-            preview_path = create_and_save_preview(ch_text, Path(tmpdir))
+            async with ProcessingMessagePlaceHolder(update):
+                loop = asyncio.get_event_loop()
+                preview_path = await loop.run_in_executor(None, create_and_save_preview, ch_text, Path(tmpdir))
         except PreviewError as exp:
             await update.message.reply_text(str(exp))
             return ConversationHandler.END
@@ -110,17 +115,25 @@ async def process_audio_not_provided(update: Update, context: ContextTypes.DEFAU
 
 async def process_approval(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     logger.info(f"Post was {update.message.text}. Processing...")
-    if update.message.text == APPROVED:
+    if update.message.text == DISAPPROVED:
+        await process_cancel(update, context)
+
+    elif update.message.text == APPROVED:
         user = get_chat_id(update)
+        post_to_save = user_to_post_map[user].cook_post()
         try:
-            registry.save_new_post(user_to_post_map[user].cook_post())
+            async with ProcessingMessagePlaceHolder(update):
+                loop = asyncio.get_event_loop()
+                await loop.run_in_executor(None, registry.save_new_post, post_to_save)
+
         except PostNotSaved as exp:
             await update.message.reply_text(str(exp))
             return ConversationHandler.END
+
         await update.message.reply_text("Пост сохранён.")
         user_to_post_map.pop(user)
-    elif update.message.text == DISAPPROVED:
-        await process_cancel(update, context)
+    else:
+        raise UnexpectedResponse(f"Expected {APPROVED} or {DISAPPROVED}, got {update}")
 
     return ConversationHandler.END
 
