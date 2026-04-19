@@ -2,4 +2,4 @@ services:
   lang-channel:
     build: .
     restart: on-failure
-    command: poetry run python -m lang_channel
+    command: python -m lang_channel

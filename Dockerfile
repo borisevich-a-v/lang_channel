@@ -1,19 +1,21 @@
 FROM python:3.13-slim
 
-RUN apt-get update -y  \
-    && apt-get -y install libraqm-dev \
-    && python -m pip install poetry
+RUN apt-get update -y \
+    && apt-get -y install libraqm-dev
 
-ENV POETRY_NO_INTERACTION=1 \
-    POETRY_VIRTUALENVS_CREATE=false
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PROJECT_ENVIRONMENT=/usr/local
 
 WORKDIR /app
 
 # Preinstall dependencies
-COPY pyproject.toml poetry.lock ./
-RUN poetry install --no-interaction --no-ansi --no-root
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-install-project --no-dev
 
 COPY service_account.json /root/.config/gspread/service_account.json
 COPY . .
 
-RUN poetry install --no-interaction --no-ansi --only-root
+RUN uv sync --frozen --no-dev
