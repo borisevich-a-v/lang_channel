@@ -24,7 +24,7 @@ def main():
         application.add_handler(h)
 
     logger.info("Adding jobs...")
-    application.job_queue.run_daily(publish_post, time=config.POST_PUBLISHING_TIME)
+    application.job_queue.run_daily(publish_post, time=config.POST_PUBLISHING_TIME, days=(1, 2, 3, 4, 5))
 
     logger.info("Starting polling...")
     application.run_polling()
